@@ -1,0 +1,154 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Barang;
+use App\Models\RiwayatOut;
+use App\Models\RiwayatMove;
+use App\Models\RiwayatIn;
+use Illuminate\Http\Request;
+
+class HistoryController extends Controller
+{
+    public function index()
+    {
+        // Menghitung jumlah record di masing-masing table
+        $data = [
+            'totalBarang' => Barang::count(),
+            'totalIn'     => RiwayatIn::count(),
+            'totalOut'    => RiwayatOut::count(),
+            'totalMove'   => RiwayatMove::count(),
+        ];
+
+        return view('improvement.history.index', $data);
+    }
+
+    public function inIndex(Request $request)
+    {
+        // Mulai query
+        $query = \App\Models\RiwayatIn::with('barang');
+
+        // Cek apakah ada filter tanggal
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+
+        $data = $query->latest()->get();
+        return view('improvement.history.history_in', compact('data'));
+    }
+
+    public function exportIn(Request $request)
+    {
+        $fileName = 'riwayat_masuk_' . date('Y-m-d') . '.csv';
+
+        // Gunakan logika filter yang sama dengan inIndex
+        $query = \App\Models\RiwayatIn::with('barang');
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+        $data = $query->get();
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty']);
+            foreach ($data as $row) {
+                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function outIndex()
+    {
+        $data = \App\Models\RiwayatOut::with('barang')->latest()->get();
+        return view('improvement.history.history_out', compact('data'));
+    }
+
+    public function exportOut(Request $request)
+    {
+        $fileName = 'riwayat_keluar_' . date('Y-m-d') . '.csv';
+
+        $query = \App\Models\RiwayatOut::with('barang');
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+        $data = $query->get();
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty']);
+            foreach ($data as $row) {
+                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function moveIndex(Request $request)
+    {
+        $query = \App\Models\RiwayatMove::with('barang');
+
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+
+        $data = $query->latest()->get();
+        return view('improvement.history.history_move', compact('data'));
+    }
+
+    public function exportMove(Request $request)
+    {
+        $fileName = 'riwayat_pindah_' . date('Y-m-d') . '.csv';
+
+        $query = \App\Models\RiwayatMove::with('barang');
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+        $data = $query->get();
+
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty', 'Dari', 'Ke']);
+            foreach ($data as $row) {
+                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty, $row->from_location, $row->to_location]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+}
