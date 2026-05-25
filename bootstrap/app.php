@@ -11,14 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*'); // ← tambah ini
         $middleware->alias([
             'no-cache' => \App\Http\Middleware\PreventBackHistory::class,
-        ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'no-cache' => \App\Http\Middleware\PreventBackHistory::class,
-            'role'     => \App\Http\Middleware\CheckRole::class, // Tambahkan baris ini
+            'role'     => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

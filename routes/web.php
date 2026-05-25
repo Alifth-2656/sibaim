@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KelolaBarangController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\UserController;
 
@@ -63,7 +64,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/', [DashboardController::class, 'admin'])->name('dashboard');
 
     // Inventory
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory', [InventoryController::class, 'indexAdm'])->name('inventory.index');
 
     // Laporan (bikin dulu placeholder biar route-nya ada)
     Route::get('/laporan/permintaan', function () {
@@ -80,6 +81,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    //laporan permintaan
+    Route::get('/laporan/permintaan', [LaporanController::class, 'laporanPermintaan'])->name('laporan.permintaan');
+
+    //laporan stok
+    Route::get('/laporan/stok', [LaporanController::class, 'laporanStok'])->name('laporan.stok');
+    Route::get('/laporan/stok/export', [LaporanController::class, 'exportStok'])->name('laporan.stok.export');
 });
 
 /*

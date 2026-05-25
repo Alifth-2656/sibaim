@@ -31,7 +31,7 @@
                     </svg>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-xl font-extrabold tracking-tighter text-white uppercase">si<span class="text-[#5EEAD4]">Log</span></span>
+                    <span class="text-xl font-extrabold tracking-tighter text-white uppercase">si<span class="text-[#5EEAD4]">Baim</span></span>
                     <span class="text-[10px] text-blue-200 -mt-1 uppercase tracking-widest font-bold">sistem in out barang</span>
                 </div>
             </div>
@@ -64,7 +64,7 @@
                         </svg>
                         <span class="text-sm">Kelola User</span>
                     </a>
-
+<!-- 
                     <a href="{{ route('admin.inventory.index') }}"
                         class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
                         {{ request()->routeIs('admin.inventory.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
@@ -72,7 +72,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         <span class="text-sm">Inventory</span>
-                    </a>
+                    </a> -->
                 </div>
 
                 {{-- LAPORAN --}}
