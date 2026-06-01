@@ -10,6 +10,25 @@
 @section('content')
 <div class="space-y-6">
 
+    {{-- REMINDER STO --}}
+    @if($reminderSto)
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl px-6 py-5 flex items-start gap-4">
+        <div class="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-black text-amber-800 uppercase tracking-wide">Reminder — STO Bulan Ini Belum Dilakukan!</p>
+            <p class="text-xs text-amber-600 mt-1">Sudah tanggal {{ now()->format('d') }} — Stock Take Over bulan {{ now()->translatedFormat('F Y') }} belum ada. Segera lakukan pengecekan stok fisik.</p>
+        </div>
+        <a href="{{ route('improvement.kelola_barang.sto') }}"
+            class="flex-shrink-0 px-4 py-2 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-600 transition-all">
+            Mulai STO →
+        </a>
+    </div>
+    @endif
+
     {{-- STAT CARDS --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">

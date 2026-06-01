@@ -61,6 +61,17 @@
             <p class="text-xs text-gray-400 font-bold mt-2">Lihat riwayat perpindahan lokasi barang</p>
         </a>
 
+        <a href="{{ route('improvement.history.sto.index') }}"
+            class="group bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-lg transition flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+            </div>
+            <h4 class="font-black text-gray-800 uppercase tracking-widest">Stock Take Over</h4>
+            <p class="text-xs text-gray-400 font-bold mt-2">Lihat riwayat pengecekan stok fisik vs sistem</p>
+        </a>
+
     </div>
 </div>
 @endsection

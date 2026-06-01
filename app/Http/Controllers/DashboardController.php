@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\RiwayatIn;
 use App\Models\RiwayatOut;
+use App\Models\RiwayatSto;
 use App\Models\Permintaan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -78,11 +79,21 @@ class DashboardController extends Controller
 
         $permintaanTerbaru = Permintaan::latest()->limit(5)->get();
 
+        // STO reminder: tampil jika tanggal >= 25 dan belum ada STO bulan ini
+        $hariIni        = now()->day;
+        $stoBulanIni    = RiwayatSto::whereYear('tanggal', now()->year)
+                            ->whereMonth('tanggal', now()->month)
+                            ->latest('tanggal')
+                            ->first();
+        $reminderSto    = $hariIni >= 1 && is_null($stoBulanIni);
+        $stoTerakhir    = $stoBulanIni;
+
         return view('improvement.dashboard', compact(
             'totalBarang', 'totalStok', 'barangMasuk', 'barangKeluar',
             'stockAman', 'stockKurang', 'stockHabis',
             'stokBarang', 'permintaanTerbaru',
-            'labels', 'dataMasuk', 'dataKeluar'
+            'labels', 'dataMasuk', 'dataKeluar',
+            'reminderSto', 'stoTerakhir'
         ));
     }
 

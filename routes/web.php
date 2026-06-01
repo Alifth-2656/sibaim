@@ -146,6 +146,10 @@ Route::middleware(['auth', 'role:improvement'])->group(function () {   // ✅ Ta
             Route::get('/out/export', [HistoryController::class, 'exportOut'])->name('out.export');
             Route::get('/move', [HistoryController::class, 'moveIndex'])->name('move.index');
             Route::get('/move/export', [HistoryController::class, 'exportMove'])->name('move.export');
+
+            // ✅ Tambah ini
+            Route::get('/sto', [HistoryController::class, 'stoIndex'])->name('sto.index');
+            Route::get('/sto/{id}', [HistoryController::class, 'stoDetail'])->name('sto.detail');
         });
     });
 });

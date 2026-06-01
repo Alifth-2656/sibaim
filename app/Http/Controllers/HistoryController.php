@@ -6,18 +6,19 @@ use App\Models\Barang;
 use App\Models\RiwayatOut;
 use App\Models\RiwayatMove;
 use App\Models\RiwayatIn;
+use App\Models\RiwayatSto;
 use Illuminate\Http\Request;
 
 class HistoryController extends Controller
 {
     public function index()
     {
-        // Menghitung jumlah record di masing-masing table
         $data = [
             'totalBarang' => Barang::count(),
             'totalIn'     => RiwayatIn::count(),
             'totalOut'    => RiwayatOut::count(),
             'totalMove'   => RiwayatMove::count(),
+            'totalSto'    => RiwayatSto::count(),
         ];
 
         return view('improvement.history.index', $data);
@@ -38,6 +39,31 @@ class HistoryController extends Controller
 
         $data = $query->latest()->get();
         return view('improvement.history.history_in', compact('data'));
+    }
+
+
+
+    public function stoIndex(Request $request)
+    {
+        $query = RiwayatSto::latest();
+
+        // Filter bulan: format "YYYY-MM"
+        if ($request->filled('bulan')) {
+            [$year, $month] = explode('-', $request->bulan);
+            $query->whereYear('tanggal', $year)
+                  ->whereMonth('tanggal', $month);
+        }
+
+        $riwayat     = $query->paginate(10)->appends($request->only('bulan'));
+        $filterBulan = $request->bulan;
+
+        return view('improvement.history.history_sto', compact('riwayat', 'filterBulan'));
+    }
+
+    public function stoDetail($id)
+    {
+        $sto = RiwayatSto::with('details.barang')->findOrFail($id);
+        return view('improvement.history.history_sto_detail', compact('sto'));
     }
 
     public function exportIn(Request $request)
@@ -71,9 +97,18 @@ class HistoryController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function outIndex()
+    public function outIndex(Request $request)
     {
-        $data = \App\Models\RiwayatOut::with('barang')->latest()->get();
+        $query = \App\Models\RiwayatOut::with('barang');
+
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+
+        $data = $query->latest()->get();
         return view('improvement.history.history_out', compact('data'));
     }
 
