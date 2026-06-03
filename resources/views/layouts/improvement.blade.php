@@ -12,9 +12,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 
     @stack('styles')
@@ -124,10 +133,18 @@
                         {{-- ✅ FIX: Notifikasi Bell --}}
                         <div class="relative" id="notifWrapper">
                             @php
-                                $unread = \App\Models\Notifikasi::whereJsonContains('for_roles', auth()->user()->role)
-                                    ->where('is_read', false)->count();
-                                $notifs = \App\Models\Notifikasi::whereJsonContains('for_roles', auth()->user()->role)
-                                    ->latest()->limit(10)->get();
+                            $cacheKey = 'notif_' . auth()->user()->role . '_' . auth()->id();
+                            $notifData = cache()->remember($cacheKey, now()->addMinutes(3), function () {
+                            $role = auth()->user()->role;
+                            return [
+                            'unread' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)
+                            ->where('is_read', false)->count(),
+                            'items' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)
+                            ->latest()->limit(10)->get()->toArray(),
+                            ];
+                            });
+                            $unread = $notifData['unread'];
+                            $notifs = collect($notifData['items'])->map(fn($n) => (object) $n);
                             @endphp
 
                             <button onclick="toggleNotif(event)" class="relative p-2 text-gray-400 hover:text-gray-600 transition-all">
@@ -166,7 +183,7 @@
                                                 <p class="text-[11px] font-black text-gray-800">{{ $notif->judul }}</p>
                                                 <p class="text-[10px] text-gray-500 mt-0.5 break-words">{{ $notif->pesan }}</p>
                                                 <p class="text-[9px] text-gray-300 mt-1 font-bold uppercase tracking-widest">
-                                                    {{ $notif->created_at->diffForHumans() }}
+                                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
                                                 </p>
                                             </div>
                                             @if(!$notif->is_read)
@@ -225,7 +242,7 @@
         }
 
         // Tutup dropdown kalau klik di luar
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             const wrapper = document.getElementById('notifWrapper');
             const dropdown = document.getElementById('notifDropdown');
             if (wrapper && !wrapper.contains(e.target)) {

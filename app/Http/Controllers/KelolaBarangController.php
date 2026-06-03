@@ -9,7 +9,9 @@ use App\Models\RiwayatMove;
 use App\Models\RiwayatOut;
 use App\Models\RiwayatSto;
 use App\Models\RiwayatStoDetail;
+use App\Models\StoDraft;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class KelolaBarangController extends Controller
@@ -231,8 +233,9 @@ class KelolaBarangController extends Controller
 
     public function sto()
     {
-        $barangs = Barang::orderBy('kode_barang')->get();
-        return view('improvement.kelola_barang.sto', compact('barangs'));
+        $barangs   = Barang::orderBy('kode_barang')->get();
+        $stoDraft  = StoDraft::where('user_id', Auth::id())->first();
+        return view('improvement.kelola_barang.sto', compact('barangs', 'stoDraft'));
     }
 
     public function checkSto(Request $request)
@@ -241,6 +244,16 @@ class KelolaBarangController extends Controller
             'pic'   => 'required|string|max:100',
             'items' => 'required|array',
         ]);
+
+        // Cek apakah STO bulan ini sudah pernah dilakukan
+        $stoBulanIni = RiwayatSto::whereYear('tanggal', now()->year)
+            ->whereMonth('tanggal', now()->month)
+            ->first();
+
+        if ($stoBulanIni) {
+            $tanggalSto = \Carbon\Carbon::parse($stoBulanIni->tanggal)->translatedFormat('d F Y');
+            return back()->with('error', "STO bulan ini sudah dilakukan pada {$tanggalSto} oleh {$stoBulanIni->pic}. STO hanya bisa dilakukan sekali per bulan.");
+        }
 
         $results = [];
 
@@ -262,11 +275,14 @@ class KelolaBarangController extends Controller
             ];
         }
 
-        // Simpan sementara di session untuk konfirmasi
-        session(['sto_pending' => [
-            'pic'     => $request->pic,
-            'results' => $results,
-        ]]);
+        // Simpan sebagai draft ke DB (bukan session, agar tidak hilang saat browser tutup)
+        StoDraft::updateOrCreate(
+            ['user_id' => Auth::id()],
+            [
+                'pic'     => $request->pic,
+                'results' => $results,
+            ]
+        );
 
         return view('improvement.kelola_barang.sto_result', [
             'pic'     => $request->pic,
@@ -274,19 +290,26 @@ class KelolaBarangController extends Controller
         ]);
     }
 
+    public function discardStoDraft()
+    {
+        StoDraft::where('user_id', Auth::id())->delete();
+        return redirect()->route('improvement.kelola_barang.sto')
+            ->with('success', 'Draft STO dihapus. Silakan mulai STO baru.');
+    }
+
     public function confirmSto(Request $request)
     {
-        $pending = session('sto_pending');
+        $draft = StoDraft::where('user_id', Auth::id())->first();
 
-        if (!$pending) {
+        if (!$draft) {
             return redirect()->route('improvement.kelola_barang.sto')
-                ->with('error', 'Sesi STO tidak ditemukan. Silakan ulangi proses STO.');
+                ->with('error', 'Draft STO tidak ditemukan. Silakan ulangi proses STO.');
         }
 
         DB::beginTransaction();
 
         try {
-            $results      = $pending['results'];
+            $results      = $draft->results;
             $adjustItems  = $request->input('adjust', []); // array barang_id yang di-adjust
 
             $totalMatch   = collect($results)->where('status', 'match')->count();
@@ -294,7 +317,7 @@ class KelolaBarangController extends Controller
 
             // Simpan header STO
             $sto = RiwayatSto::create([
-                'pic'           => $pending['pic'],
+                'pic'           => $draft->pic,
                 'tanggal'       => now()->toDateString(),
                 'total_item'    => count($results),
                 'total_match'   => $totalMatch,
@@ -322,7 +345,7 @@ class KelolaBarangController extends Controller
             }
 
             DB::commit();
-            session()->forget('sto_pending');
+            $draft->delete();
 
             return redirect()->route('improvement.kelola_barang.index')
                 ->with('success', 'STO berhasil disimpan. ' . count($adjustItems) . ' item di-adjust.');

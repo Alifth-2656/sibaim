@@ -66,15 +66,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'indexAdm'])->name('inventory.index');
 
-    // Laporan (bikin dulu placeholder biar route-nya ada)
-    Route::get('/laporan/permintaan', function () {
-        return view('admin.laporan.permintaan');
-    })->name('laporan.permintaan');
-
-    Route::get('/laporan/stok', function () {
-        return view('admin.laporan.stok');
-    })->name('laporan.stok');
-
     // Kelola User
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -136,6 +127,7 @@ Route::middleware(['auth', 'role:improvement'])->group(function () {   // ✅ Ta
             Route::get('/sto', [KelolaBarangController::class, 'sto'])->name('sto');
             Route::post('/sto/check', [KelolaBarangController::class, 'checkSto'])->name('sto.check');
             Route::post('/sto/confirm', [KelolaBarangController::class, 'confirmSto'])->name('sto.confirm');
+            Route::post('/sto/discard-draft', [KelolaBarangController::class, 'discardStoDraft'])->name('sto.discard_draft');
         });
 
         Route::prefix('history')->name('history.')->group(function () {

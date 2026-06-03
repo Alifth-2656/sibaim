@@ -8,6 +8,7 @@ use App\Models\RiwayatOut;
 use App\Models\RiwayatSto;
 use App\Models\Permintaan;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -17,18 +18,17 @@ class DashboardController extends Controller
     // =====================
     public function comodity()
     {
-        $totalJenis  = Barang::count();
-        $totalStok   = Barang::sum('qty');
-        $stokMenipis = Barang::whereColumn('qty', '<=', 'min')->count();
+        $data = Cache::remember('dashboard_comodity', now()->addMinutes(5), function () {
+            return [
+                'totalJenis'  => Barang::count(),
+                'totalStok'   => Barang::sum('qty'),
+                'stokMenipis' => Barang::whereColumn('qty', '<=', 'min')->count(),
+            ];
+        });
 
         $permintaanTerakhir = Permintaan::latest()->take(5)->get();
 
-        return view('comodity.dashboard', compact(
-            'totalJenis',
-            'totalStok',
-            'stokMenipis',
-            'permintaanTerakhir'
-        ));
+        return view('comodity.dashboard', array_merge($data, compact('permintaanTerakhir')));
     }
 
     // =====================
@@ -36,64 +36,71 @@ class DashboardController extends Controller
     // =====================
     public function improvement()
     {
-        $totalBarang  = Barang::count();
-        $totalStok    = Barang::sum('qty');
-        $barangMasuk  = RiwayatIn::whereMonth('created_at', now()->month)->sum('qty');
-        $barangKeluar = RiwayatOut::whereMonth('created_at', now()->month)->sum('qty');
+        // Cache stat cards & chart — 5 menit
+        $stats = Cache::remember('dashboard_improvement_stats', now()->addMinutes(5), function () {
+            $riwayatMasuk = RiwayatIn::select(
+                    DB::raw('DATE(created_at) as tanggal'),
+                    DB::raw('SUM(qty) as total')
+                )
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->groupBy('tanggal')
+                ->pluck('total', 'tanggal');
 
-        $stockAman   = Barang::whereColumn('qty', '>=', 'min')->count();
-        $stockKurang = Barang::whereColumn('qty', '<', 'min')->where('qty', '>', 0)->count();
-        $stockHabis  = Barang::where('qty', 0)->count();
+            $riwayatKeluar = RiwayatOut::select(
+                    DB::raw('DATE(created_at) as tanggal'),
+                    DB::raw('SUM(qty) as total')
+                )
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->groupBy('tanggal')
+                ->pluck('total', 'tanggal');
 
-        $stokBarang = Barang::select('nama_barang', 'qty', 'min')
-            ->orderByDesc('qty')
-            ->limit(8)
-            ->get();
+            $labels = collect();
+            $dataMasuk = collect();
+            $dataKeluar = collect();
 
-        $riwayatMasuk = RiwayatIn::select(
-                DB::raw('DATE(created_at) as tanggal'),
-                DB::raw('SUM(qty) as total')
-            )
-            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->groupBy('tanggal')
-            ->pluck('total', 'tanggal');
+            for ($i = 6; $i >= 0; $i--) {
+                $tgl = now()->subDays($i)->format('Y-m-d');
+                $labels->push(now()->subDays($i)->format('d M'));
+                $dataMasuk->push($riwayatMasuk[$tgl] ?? 0);
+                $dataKeluar->push($riwayatKeluar[$tgl] ?? 0);
+            }
 
-        $riwayatKeluar = RiwayatOut::select(
-                DB::raw('DATE(created_at) as tanggal'),
-                DB::raw('SUM(qty) as total')
-            )
-            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->groupBy('tanggal')
-            ->pluck('total', 'tanggal');
+            return [
+                'totalBarang'  => Barang::count(),
+                'totalStok'    => Barang::sum('qty'),
+                'barangMasuk'  => RiwayatIn::whereMonth('created_at', now()->month)->sum('qty'),
+                'barangKeluar' => RiwayatOut::whereMonth('created_at', now()->month)->sum('qty'),
+                'stockAman'    => Barang::whereColumn('qty', '>=', 'min')->count(),
+                'stockKurang'  => Barang::whereColumn('qty', '<', 'min')->where('qty', '>', 0)->count(),
+                'stockHabis'   => Barang::where('qty', 0)->count(),
+                'stokBarang'   => Barang::select('nama_barang', 'qty', 'min')->orderByDesc('qty')->limit(8)->get(),
+                'labels'       => $labels,
+                'dataMasuk'    => $dataMasuk,
+                'dataKeluar'   => $dataKeluar,
+            ];
+        });
 
-        $labels     = collect();
-        $dataMasuk  = collect();
-        $dataKeluar = collect();
+        // Permintaan terbaru — cache 2 menit (key per role supaya tidak collision)
+        $permintaanTerbaru = Cache::remember('dashboard_permintaan_improvement', now()->addMinutes(2), function () {
+            return Permintaan::latest()->limit(5)->get();
+        });
 
-        for ($i = 6; $i >= 0; $i--) {
-            $tgl = now()->subDays($i)->format('Y-m-d');
-            $labels->push(now()->subDays($i)->format('d M'));
-            $dataMasuk->push($riwayatMasuk[$tgl] ?? 0);
-            $dataKeluar->push($riwayatKeluar[$tgl] ?? 0);
-        }
+        // STO reminder — cache 10 menit
+        $stoData = Cache::remember('dashboard_sto_reminder', now()->addMinutes(10), function () {
+            $stoBulanIni = RiwayatSto::whereYear('tanggal', now()->year)
+                ->whereMonth('tanggal', now()->month)
+                ->latest('tanggal')
+                ->first();
+            return [
+                'reminderSto' => now()->day >= 25 && is_null($stoBulanIni),
+                'stoTerakhir' => $stoBulanIni,
+            ];
+        });
 
-        $permintaanTerbaru = Permintaan::latest()->limit(5)->get();
-
-        // STO reminder: tampil jika tanggal >= 25 dan belum ada STO bulan ini
-        $hariIni        = now()->day;
-        $stoBulanIni    = RiwayatSto::whereYear('tanggal', now()->year)
-                            ->whereMonth('tanggal', now()->month)
-                            ->latest('tanggal')
-                            ->first();
-        $reminderSto    = $hariIni >= 1 && is_null($stoBulanIni);
-        $stoTerakhir    = $stoBulanIni;
-
-        return view('improvement.dashboard', compact(
-            'totalBarang', 'totalStok', 'barangMasuk', 'barangKeluar',
-            'stockAman', 'stockKurang', 'stockHabis',
-            'stokBarang', 'permintaanTerbaru',
-            'labels', 'dataMasuk', 'dataKeluar',
-            'reminderSto', 'stoTerakhir'
+        return view('improvement.dashboard', array_merge(
+            $stats,
+            compact('permintaanTerbaru'),
+            $stoData
         ));
     }
 
@@ -102,67 +109,64 @@ class DashboardController extends Controller
     // =====================
     public function admin()
     {
-        // Stat Cards
-        $totalBarang  = Barang::count();
-        $totalStok    = Barang::sum('qty');
-        $totalUser    = User::count();
-        $barangMasuk  = RiwayatIn::whereMonth('created_at', now()->month)->sum('qty');
-        $barangKeluar = RiwayatOut::whereMonth('created_at', now()->month)->sum('qty');
+        $stats = Cache::remember('dashboard_admin_stats', now()->addMinutes(5), function () {
+            $riwayatMasuk = RiwayatIn::select(
+                    DB::raw('DATE(created_at) as tanggal'),
+                    DB::raw('SUM(qty) as total')
+                )
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->groupBy('tanggal')
+                ->pluck('total', 'tanggal');
 
-        // Inventory Status
-        $stockAman   = Barang::whereColumn('qty', '>=', 'min')->count();
-        $stockKurang = Barang::whereColumn('qty', '<', 'min')->where('qty', '>', 0)->count();
-        $stockHabis  = Barang::where('qty', 0)->count();
+            $riwayatKeluar = RiwayatOut::select(
+                    DB::raw('DATE(created_at) as tanggal'),
+                    DB::raw('SUM(qty) as total')
+                )
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->groupBy('tanggal')
+                ->pluck('total', 'tanggal');
 
-        // Line Chart — 7 hari terakhir
-        $riwayatMasuk = RiwayatIn::select(
-                DB::raw('DATE(created_at) as tanggal'),
-                DB::raw('SUM(qty) as total')
-            )
-            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->groupBy('tanggal')
-            ->pluck('total', 'tanggal');
+            $labels = collect();
+            $dataMasuk = collect();
+            $dataKeluar = collect();
 
-        $riwayatKeluar = RiwayatOut::select(
-                DB::raw('DATE(created_at) as tanggal'),
-                DB::raw('SUM(qty) as total')
-            )
-            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->groupBy('tanggal')
-            ->pluck('total', 'tanggal');
+            for ($i = 6; $i >= 0; $i--) {
+                $tgl = now()->subDays($i)->format('Y-m-d');
+                $labels->push(now()->subDays($i)->format('d M'));
+                $dataMasuk->push($riwayatMasuk[$tgl] ?? 0);
+                $dataKeluar->push($riwayatKeluar[$tgl] ?? 0);
+            }
 
-        $labels     = collect();
-        $dataMasuk  = collect();
-        $dataKeluar = collect();
+            return [
+                'totalBarang'  => Barang::count(),
+                'totalStok'    => Barang::sum('qty'),
+                'totalUser'    => User::count(),
+                'barangMasuk'  => RiwayatIn::whereMonth('created_at', now()->month)->sum('qty'),
+                'barangKeluar' => RiwayatOut::whereMonth('created_at', now()->month)->sum('qty'),
+                'stockAman'    => Barang::whereColumn('qty', '>=', 'min')->count(),
+                'stockKurang'  => Barang::whereColumn('qty', '<', 'min')->where('qty', '>', 0)->count(),
+                'stockHabis'   => Barang::where('qty', 0)->count(),
+                'labels'       => $labels,
+                'dataMasuk'    => $dataMasuk,
+                'dataKeluar'   => $dataKeluar,
+                'topKeluar'    => RiwayatOut::select('barang_id', DB::raw('SUM(qty) as total'))
+                                    ->whereMonth('created_at', now()->month)
+                                    ->groupBy('barang_id')
+                                    ->orderByDesc('total')
+                                    ->with('barang')
+                                    ->limit(5)
+                                    ->get(),
+                'lowStocks'    => Barang::whereColumn('qty', '<=', 'min')->orderBy('qty')->limit(5)->get(),
+            ];
+        });
 
-        for ($i = 6; $i >= 0; $i--) {
-            $tgl = now()->subDays($i)->format('Y-m-d');
-            $labels->push(now()->subDays($i)->format('d M'));
-            $dataMasuk->push($riwayatMasuk[$tgl] ?? 0);
-            $dataKeluar->push($riwayatKeluar[$tgl] ?? 0);
-        }
+        $permintaanTerbaru = Cache::remember('dashboard_permintaan_admin', now()->addMinutes(2), function () {
+            return Permintaan::latest()->limit(5)->get();
+        });
 
-        // Top 5 barang paling sering keluar bulan ini
-        $topKeluar = RiwayatOut::select('barang_id', DB::raw('SUM(qty) as total'))
-            ->whereMonth('created_at', now()->month)
-            ->groupBy('barang_id')
-            ->orderByDesc('total')
-            ->with('barang')
-            ->limit(5)
-            ->get();
-
-        // Permintaan terbaru dari comodity
-        $permintaanTerbaru = Permintaan::latest()->limit(5)->get();
-
-        // Low stock
-        $lowStocks = Barang::whereColumn('qty', '<=', 'min')->orderBy('qty')->limit(5)->get();
-
-        return view('admin.dashboard', compact(
-            'totalBarang', 'totalStok', 'totalUser',
-            'barangMasuk', 'barangKeluar',
-            'stockAman', 'stockKurang', 'stockHabis',
-            'labels', 'dataMasuk', 'dataKeluar',
-            'topKeluar', 'permintaanTerbaru', 'lowStocks'
+        return view('admin.dashboard', array_merge(
+            $stats,
+            compact('permintaanTerbaru')
         ));
     }
 }

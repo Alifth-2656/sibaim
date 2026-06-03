@@ -15,7 +15,46 @@
         <p class="text-sm font-bold text-red-700">{{ session('error') }}</p>
     </div>
     @endif
-    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    {{-- RESUME DRAFT --}}
+    @if(isset($stoDraft) && $stoDraft)
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex items-start gap-3 flex-1">
+            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="text-sm font-black text-blue-800">Ada Draft STO yang Belum Dikonfirmasi</p>
+                <p class="text-xs text-blue-600 mt-0.5">
+                    PIC: <strong>{{ $stoDraft->pic }}</strong> —
+                    {{ count($stoDraft->results) }} item —
+                    disimpan {{ $stoDraft->updated_at->diffForHumans() }}
+                </p>
+            </div>
+        </div>
+        <div class="flex gap-3 flex-shrink-0">
+            <form method="POST" action="{{ route('improvement.kelola_barang.sto.check') }}" id="resumeForm">
+                @csrf
+                <input type="hidden" name="pic" value="{{ $stoDraft->pic }}">
+                @foreach($stoDraft->results as $item)
+                    <input type="hidden" name="items[{{ $item['barang_id'] }}]" value="{{ $item['qty_fisik'] }}">
+                @endforeach
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all">
+                    Lanjutkan →
+                </button>
+            </form>
+            <form method="POST" action="{{ route('improvement.kelola_barang.sto.discard_draft') }}">
+                @csrf
+                <button type="submit"
+                    class="px-4 py-2 bg-white border border-blue-200 text-blue-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-50 transition-all"
+                    onclick="return confirm('Yakin hapus draft STO ini?')">
+                    Hapus Draft
+                </button>
+            </form>
+        </div>
+    </div>
+    @endif
 
     <form method="POST" action="{{ route('improvement.kelola_barang.sto.check') }}" id="stoForm">
         @csrf
@@ -114,34 +153,64 @@
 
                     {{-- SCAN MODE --}}
                     <div id="scanSection" class="hidden">
-                        <div class="flex flex-col items-center gap-6">
-                            <div id="reader" class="w-full max-w-sm rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-black"></div>
+                        <div class="flex flex-col gap-6">
 
-                            {{-- Input qty setelah scan --}}
-                            <div id="scanResult" class="hidden w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-                                <div>
-                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Barang Terdeteksi</p>
-                                    <p id="scanNama" class="text-sm font-black text-gray-800 mt-1">-</p>
-                                    <p id="scanKode" class="text-[10px] text-gray-400 font-bold">-</p>
+                            {{-- STATUS SCANNER --}}
+                            <div class="flex items-center justify-between">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status Scanner</p>
+                                <div id="scannerStatusBadge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 transition-all duration-500">
+                                    <span id="scannerStatusDot" class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                                    <span id="scannerStatusText" class="text-[10px] font-black uppercase tracking-widest text-red-500">Disconnected</span>
                                 </div>
-                                <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Qty Fisik</label>
-                                    <input type="number" id="scanQtyFisik" min="0" value="0"
-                                        class="w-full px-4 py-3 bg-gray-50 rounded-xl font-black text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5EEAD4]">
-                                </div>
-                                <button type="button" onclick="confirmScan()"
-                                    class="w-full py-3 bg-[#5EEAD4] text-[#1E4D9C] rounded-xl font-black text-[11px] uppercase tracking-widest hover:opacity-80 transition-all">
-                                    Tambah ke List
-                                </button>
                             </div>
 
-                            <div id="scanIdle" class="text-center">
-                                <div class="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 rounded-full mb-2">
-                                    <span class="w-2 h-2 bg-[#5EEAD4] rounded-full animate-ping"></span>
-                                    <span class="text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest">Scanner Active</span>
+                            {{-- SCAN INPUT AREA --}}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                    <svg id="scannerIcon" class="w-6 h-6 text-gray-300 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 8H3m18-8h-1M4 4l16 16"/>
+                                    </svg>
                                 </div>
-                                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Arahkan kamera ke QR code barang</p>
+                                <input
+                                    type="text"
+                                    id="scannerInput"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                    class="w-full pl-14 pr-5 py-5 bg-white border-2 border-dashed border-gray-200 rounded-2xl font-mono font-black text-gray-700 text-sm focus:outline-none focus:border-[#5EEAD4] transition-all duration-300 placeholder:font-normal placeholder:text-gray-300 placeholder:font-sans"
+                                    placeholder="Fokuskan kursor di sini, lalu scan barcode...">
                             </div>
+
+                            {{-- SCAN RESULT / CONFIRM --}}
+                            <div id="scanResult" class="hidden bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <div class="flex-1 space-y-1">
+                                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Barang Terdeteksi</p>
+                                        <p id="scanNama" class="text-sm font-black text-gray-800">-</p>
+                                        <p id="scanKode" class="text-[10px] text-gray-400 font-bold">-</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="space-y-1">
+                                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Qty Fisik</p>
+                                            <input type="number" id="scanQtyFisik" min="0" value="0"
+                                                class="w-28 px-4 py-3 bg-gray-50 rounded-xl font-black text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-[#5EEAD4] border border-gray-100">
+                                        </div>
+                                        <button type="button" onclick="confirmScan()"
+                                            class="mt-5 px-6 py-3 bg-[#5EEAD4] text-[#1E4D9C] rounded-xl font-black text-[11px] uppercase tracking-widest hover:opacity-80 transition-all whitespace-nowrap">
+                                            + Tambah
+                                        </button>
+                                        <button type="button" onclick="cancelScan()"
+                                            class="mt-5 px-4 py-3 bg-gray-100 text-gray-400 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-gray-200 transition-all">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- HINT --}}
+                            <p id="scanHint" class="text-[9px] text-gray-300 font-bold uppercase tracking-widest text-center">
+                                Arahkan scanner ke barcode / QR code barang · Hasil otomatis muncul
+                            </p>
+
                         </div>
                     </div>
                 </div>
@@ -200,16 +269,13 @@
 
 <script>
     let stoItems = {};
-    let scanPending = null;
-    let html5QrCode = null;
-    let isScanning = false;
 
     // ─── MODE TOGGLE ─────────────────────────────────────────
     function setMode(mode) {
         const manual = document.getElementById('manualSection');
-        const scan = document.getElementById('scanSection');
-        const btnM = document.getElementById('btnManual');
-        const btnS = document.getElementById('btnScan');
+        const scan   = document.getElementById('scanSection');
+        const btnM   = document.getElementById('btnManual');
+        const btnS   = document.getElementById('btnScan');
 
         if (mode === 'manual') {
             manual.classList.remove('hidden');
@@ -218,7 +284,6 @@
             btnM.classList.remove('text-gray-400');
             btnS.classList.remove('bg-white', 'text-[#1E4D9C]', 'shadow-sm');
             btnS.classList.add('text-gray-400');
-            stopScanner();
         } else {
             manual.classList.add('hidden');
             scan.classList.remove('hidden');
@@ -226,84 +291,178 @@
             btnS.classList.remove('text-gray-400');
             btnM.classList.remove('bg-white', 'text-[#1E4D9C]', 'shadow-sm');
             btnM.classList.add('text-gray-400');
-            startScanner();
+
+            // Auto-focus input scanner saat mode scan aktif
+            setTimeout(() => {
+                document.getElementById('scannerInput').focus();
+            }, 100);
         }
     }
 
-    // ─── SCANNER ─────────────────────────────────────────────
-    function startScanner() {
-        if (isScanning) return;
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start({
-                    facingMode: "environment"
-                }, {
-                    fps: 15,
-                    qrbox: 250
-                },
-                (decodedText) => onScanSuccess(decodedText)
-            )
-            .then(() => {
-                isScanning = true;
-            })
-            .catch(err => console.error("Scanner error:", err));
-    }
+    // ─── SCANNER PHYSICAL ────────────────────────────────────
+    // Scanner fisik = keyboard emulator, kirim karakter + Enter
+    // Kita deteksi "connected" dari kecepatan input (burst dalam <50ms = scanner)
 
-    function stopScanner() {
-        if (html5QrCode && isScanning) {
-            html5QrCode.stop()
-                .then(() => {
-                    isScanning = false;
-                    html5QrCode = null;
-                })
-                .catch(err => console.error("Stop error:", err));
+    const scannerInput = document.getElementById('scannerInput');
+    let   lastKeyTime  = 0;
+    let   keyBuffer    = '';
+    let   keyTimer     = null;
+    let   isConnected  = false;
+    let   disconnectTimer = null;
+
+    // Deteksi karakter masuk — scanner fisik mengirim semua karakter sangat cepat (< 50ms per char)
+    scannerInput.addEventListener('keydown', function(e) {
+        const now = Date.now();
+        const gap = now - lastKeyTime;
+        lastKeyTime = now;
+
+        // Jika karakter datang dalam < 50ms → kemungkinan besar dari scanner fisik
+        if (e.key !== 'Enter' && e.key.length === 1) {
+            if (gap < 50) {
+                // Scanner terdeteksi → set connected
+                setConnected(true);
+            }
+        }
+
+        // Enter = scanner selesai kirim kode
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const kode = this.value.trim();
+            if (kode) {
+                processScanCode(kode);
+                this.value = '';
+            }
+        }
+    });
+
+    // Saat user klik di luar input (blur) → disconnected
+    scannerInput.addEventListener('blur', function() {
+        // Delay sedikit supaya tidak false-positive saat click konfirmasi
+        disconnectTimer = setTimeout(() => {
+            setConnected(false);
+        }, 300);
+    });
+
+    // Saat input kembali fokus
+    scannerInput.addEventListener('focus', function() {
+        clearTimeout(disconnectTimer);
+        // Tidak langsung set connected — tunggu sampai ada input dari scanner
+    });
+
+    function setConnected(status) {
+        isConnected = status;
+
+        const badge = document.getElementById('scannerStatusBadge');
+        const dot   = document.getElementById('scannerStatusDot');
+        const text  = document.getElementById('scannerStatusText');
+        const icon  = document.getElementById('scannerIcon');
+
+        if (status) {
+            // CONNECTED — hijau + ping
+            badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200 transition-all duration-500';
+            dot.className   = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
+            text.className  = 'text-[10px] font-black uppercase tracking-widest text-green-600';
+            text.innerText  = 'Connected';
+            icon.className  = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
+
+            // Auto-disconnect setelah 3 detik tidak ada scan
+            clearTimeout(disconnectTimer);
+            disconnectTimer = setTimeout(() => setConnected(false), 3000);
+        } else {
+            // DISCONNECTED — merah
+            badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 transition-all duration-500';
+            dot.className   = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            text.className  = 'text-[10px] font-black uppercase tracking-widest text-red-500';
+            text.innerText  = 'Disconnected';
+            icon.className  = 'w-6 h-6 text-gray-300 transition-all duration-300';
         }
     }
 
-    window.addEventListener('beforeunload', () => stopScanner());
-
-    function onScanSuccess(kodeBarang) {
+    function processScanCode(kode) {
         const selector = document.getElementById('itemSelector');
         let found = null;
+
         for (let i = 0; i < selector.options.length; i++) {
             const opt = selector.options[i];
-            if (opt.getAttribute('data-kode') === kodeBarang) {
+            if (opt.getAttribute('data-kode') === kode) {
                 found = opt;
                 break;
             }
         }
 
         if (!found) {
-            alert('Kode barang "' + kodeBarang + '" tidak ditemukan di sistem.');
+            // Flash input merah sebentar sebagai feedback
+            scannerInput.classList.add('border-red-300', 'bg-red-50');
+            setTimeout(() => scannerInput.classList.remove('border-red-300', 'bg-red-50'), 1000);
+
+            // Tampilkan pesan di hint
+            const hint = document.getElementById('scanHint');
+            hint.innerText = '⚠ Kode "' + kode + '" tidak ditemukan di sistem!';
+            hint.classList.add('text-red-400');
+            setTimeout(() => {
+                hint.innerText = 'Arahkan scanner ke barcode / QR code barang · Hasil otomatis muncul';
+                hint.classList.remove('text-red-400');
+            }, 2500);
             return;
         }
 
-        scanPending = {
-            id: found.value,
-            nama: found.getAttribute('data-nama'),
-            kode: found.getAttribute('data-kode'),
-            satuan: found.getAttribute('data-satuan'),
-            qtySistem: parseInt(found.getAttribute('data-qty-sistem')),
-        };
-
-        document.getElementById('scanNama').innerText = scanPending.nama;
-        document.getElementById('scanKode').innerText = scanPending.kode;
-        document.getElementById('scanQtyFisik').value = 0;
+        // Tampilkan card konfirmasi qty
+        document.getElementById('scanNama').innerText = found.getAttribute('data-nama');
+        document.getElementById('scanKode').innerText = found.getAttribute('data-kode') + ' · ' + found.getAttribute('data-satuan');
+        document.getElementById('scanQtyFisik').value = 1;
         document.getElementById('scanResult').classList.remove('hidden');
-        document.getElementById('scanIdle').classList.add('hidden');
+
+        // Simpan pending data ke input konfirmasi
+        document.getElementById('scanQtyFisik').dataset.barangId     = found.value;
+        document.getElementById('scanQtyFisik').dataset.nama          = found.getAttribute('data-nama');
+        document.getElementById('scanQtyFisik').dataset.kode         = found.getAttribute('data-kode');
+        document.getElementById('scanQtyFisik').dataset.satuan        = found.getAttribute('data-satuan');
+        document.getElementById('scanQtyFisik').dataset.qtySistem     = found.getAttribute('data-qty-sistem');
+
+        // Focus qty input supaya user bisa langsung ketik qty
+        setTimeout(() => document.getElementById('scanQtyFisik').focus(), 50);
     }
 
     function confirmScan() {
-        if (!scanPending) return;
-        const qtyFisik = parseInt(document.getElementById('scanQtyFisik').value);
+        const qtyInput = document.getElementById('scanQtyFisik');
+        const qtyFisik = parseInt(qtyInput.value);
+
         if (isNaN(qtyFisik) || qtyFisik < 0) {
             alert('Masukkan qty fisik yang valid!');
             return;
         }
-        addToTable(scanPending.id, scanPending.nama, scanPending.kode, scanPending.satuan, scanPending.qtySistem, qtyFisik);
-        scanPending = null;
+
+        addToTable(
+            qtyInput.dataset.barangId,
+            qtyInput.dataset.nama,
+            qtyInput.dataset.kode,
+            qtyInput.dataset.satuan,
+            parseInt(qtyInput.dataset.qtySistem),
+            qtyFisik
+        );
+
         document.getElementById('scanResult').classList.add('hidden');
-        document.getElementById('scanIdle').classList.remove('hidden');
+
+        // Kembali fokus ke input scanner untuk scan berikutnya
+        setTimeout(() => {
+            scannerInput.value = '';
+            scannerInput.focus();
+        }, 100);
     }
+
+    function cancelScan() {
+        document.getElementById('scanResult').classList.add('hidden');
+        scannerInput.value = '';
+        setTimeout(() => scannerInput.focus(), 100);
+    }
+
+    // Enter di qty input = langsung confirm
+    document.getElementById('scanQtyFisik').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            confirmScan();
+        }
+    });
 
     // ─── MANUAL ADD ──────────────────────────────────────────
     function addItem() {
@@ -323,7 +482,7 @@
 
         const opt = selector.options[selector.selectedIndex];
         addToTable(
-            String(opt.value), // ✅ pastikan string
+            String(opt.value),
             opt.getAttribute('data-nama'),
             opt.getAttribute('data-kode'),
             opt.getAttribute('data-satuan'),
@@ -335,42 +494,32 @@
         qtyInput.value = 0;
     }
 
-    // ─── CORE ────────────────────────────────────────────────
+    // ─── CORE TABLE ──────────────────────────────────────────
     function addToTable(id, nama, kode, satuan, qtySistem, qtyFisik) {
-        // Hapus empty row kalau ada
         const emptyRow = document.getElementById('emptyRow');
         if (emptyRow) emptyRow.remove();
 
         if (stoItems[id]) {
-            // Update existing
             stoItems[id].qtyFisik = qtyFisik;
             updateRow(id);
         } else {
-            // Tambah baru
-            stoItems[id] = {
-                nama,
-                kode,
-                satuan,
-                qtySistem,
-                qtyFisik
-            };
+            stoItems[id] = { nama, kode, satuan, qtySistem, qtyFisik };
             renderRow(id);
-            updateCounter(); // ✅ hanya dipanggil saat item baru
+            updateCounter();
         }
     }
 
     function renderRow(id) {
-        const item = stoItems[id];
+        const item    = stoItems[id];
         const selisih = item.qtyFisik - item.qtySistem;
-        const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
-        const selisihStr = selisih > 0 ? '+' + selisih : String(selisih);
+        const colorClass  = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
+        const selisihStr  = selisih > 0 ? '+' + selisih : String(selisih);
 
         const tbody = document.getElementById('stoTableBody');
-        const tr = document.createElement('tr');
-        tr.id = 'row-' + id;
+        const tr    = document.createElement('tr');
+        tr.id        = 'row-' + id;
         tr.className = 'border-b border-gray-50 hover:bg-purple-50/20 transition-all';
 
-        // ✅ Pakai createElement untuk input agar tidak ada masalah HTML encoding
         tr.innerHTML = `
             <td class="px-6 py-5">
                 <p class="text-[11px] font-black text-gray-800 uppercase tracking-tight">${escHtml(item.nama)}</p>
@@ -393,48 +542,46 @@
 
         tbody.appendChild(tr);
 
-        // ✅ Buat input & hidden via createElement — hindari masalah template literal + event
-        const inputFisik = document.createElement('input');
-        inputFisik.type = 'number';
-        inputFisik.min = '0';
-        inputFisik.value = item.qtyFisik;
+        const inputFisik   = document.createElement('input');
+        inputFisik.type    = 'number';
+        inputFisik.min     = '0';
+        inputFisik.value   = item.qtyFisik;
         inputFisik.className = 'w-20 text-center px-3 py-2 bg-gray-50 rounded-xl font-black text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#5EEAD4] border border-gray-100';
         inputFisik.addEventListener('change', function() {
             updateQtyFisik(id, this.value);
         });
 
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'items[' + id + ']';
-        hiddenInput.value = item.qtyFisik;
-        hiddenInput.id = 'hidden-' + id;
+        const hiddenInput  = document.createElement('input');
+        hiddenInput.type   = 'hidden';
+        hiddenInput.name   = 'items[' + id + ']';
+        hiddenInput.value  = item.qtyFisik;
+        hiddenInput.id     = 'hidden-' + id;
 
         const tdFisik = document.getElementById('tdFisik-' + id);
         tdFisik.appendChild(inputFisik);
         tdFisik.appendChild(hiddenInput);
 
-        // ✅ Event remove via data attribute — bukan inline onclick
         tr.querySelector('[data-remove]').addEventListener('click', function() {
             removeRow(this.getAttribute('data-remove'));
         });
     }
 
     function updateRow(id) {
-        const item = stoItems[id];
+        const item    = stoItems[id];
         const selisih = item.qtyFisik - item.qtySistem;
-        const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
+        const colorClass  = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
 
         const selisihEl = document.getElementById('selisih-' + id);
-        const hiddenEl = document.getElementById('hidden-' + id);
-        const tdFisik = document.getElementById('tdFisik-' + id);
-        const inputEl = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
+        const hiddenEl  = document.getElementById('hidden-' + id);
+        const tdFisik   = document.getElementById('tdFisik-' + id);
+        const inputEl   = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
 
         if (selisihEl) {
-            selisihEl.innerText = selisih > 0 ? '+' + selisih : String(selisih);
-            selisihEl.className = 'text-sm font-black ' + colorClass;
+            selisihEl.innerText  = selisih > 0 ? '+' + selisih : String(selisih);
+            selisihEl.className  = 'text-sm font-black ' + colorClass;
         }
         if (hiddenEl) hiddenEl.value = item.qtyFisik;
-        if (inputEl) inputEl.value = item.qtyFisik;
+        if (inputEl)  inputEl.value  = item.qtyFisik;
     }
 
     function updateQtyFisik(id, val) {
@@ -450,9 +597,8 @@
         if (row) row.remove();
         updateCounter();
 
-        const tbody = document.getElementById('stoTableBody');
         if (Object.keys(stoItems).length === 0) {
-            tbody.innerHTML = `
+            document.getElementById('stoTableBody').innerHTML = `
                 <tr id="emptyRow">
                     <td colspan="5" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">
                         Belum ada barang — tambah manual atau scan QR
@@ -465,7 +611,6 @@
         document.getElementById('itemCount').innerText = Object.keys(stoItems).length + ' Items';
     }
 
-    // ✅ Escape HTML untuk mencegah XSS dari nama barang
     function escHtml(str) {
         const d = document.createElement('div');
         d.appendChild(document.createTextNode(str));

@@ -140,8 +140,16 @@
                         {{-- Notifikasi --}}
                         <div class="relative" id="notifWrapper">
                             @php
-                                $unread = \App\Models\Notifikasi::whereJsonContains('for_roles', auth()->user()->role)->where('is_read', false)->count();
-                                $notifs = \App\Models\Notifikasi::whereJsonContains('for_roles', auth()->user()->role)->latest()->limit(10)->get();
+                                $cacheKey = 'notif_' . auth()->user()->role . '_' . auth()->id();
+                                $notifData = cache()->remember($cacheKey, now()->addMinutes(3), function () {
+                                    $role = auth()->user()->role;
+                                    return [
+                                        'unread' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)->where('is_read', false)->count(),
+                                        'items'  => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)->latest()->limit(10)->get(),
+                                    ];
+                                });
+                                $unread = $notifData['unread'];
+                                $notifs = $notifData['items'];
                             @endphp
 
                             <button onclick="toggleNotif(event)" class="relative p-2 text-gray-400 hover:text-gray-600 transition-all">

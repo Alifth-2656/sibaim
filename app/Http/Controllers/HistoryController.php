@@ -179,7 +179,7 @@ class HistoryController extends Controller
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty', 'Dari', 'Ke']);
             foreach ($data as $row) {
-                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty, $row->from_location, $row->to_location]);
+                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty, $row->from, $row->to]);
             }
             fclose($file);
         };
