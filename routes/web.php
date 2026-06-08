@@ -66,6 +66,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'indexAdm'])->name('inventory.index');
 
+
+
     // Kelola User
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -79,6 +81,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     //laporan stok
     Route::get('/laporan/stok', [LaporanController::class, 'laporanStok'])->name('laporan.stok');
     Route::get('/laporan/stok/export', [LaporanController::class, 'exportStok'])->name('laporan.stok.export');
+
+    //laporan stok habis
+    Route::get('/laporan/stok-habis', [LaporanController::class, 'stokHabis'])->name('laporan.stok_habis');
+    Route::patch('/laporan/stok-habis/{id}/tangani', [LaporanController::class, 'tanganiStokHabis'])->name('laporan.stok_habis.tangani');
+
+    // pending permintaan
+    Route::get('/laporan/pending-permintaan', [LaporanController::class, 'pendingPermintaan'])->name('laporan.pending_permintaan');
+    Route::patch('/laporan/permintaan/{id}/konfirmasi', [LaporanController::class, 'konfirmasiPermintaan'])->name('laporan.permintaan.konfirmasi');
+
+    Route::get('/laporan/check-daily', [LaporanController::class, 'checkDaily'])->name('laporan.check_daily');
 });
 
 /*
@@ -96,6 +108,8 @@ Route::middleware(['auth', 'role:comodity'])->group(function () {
         Route::prefix('permintaan')->name('permintaan.')->group(function () {
             Route::get('/', [PermintaanBarangController::class, 'index'])->name('index');
             Route::get('/pilih', [PermintaanBarangController::class, 'pilih'])->name('pilih');
+            Route::post('/cek-stok', [PermintaanBarangController::class, 'cekStok'])->name('cek_stok');
+            Route::get('/konfirmasi', [PermintaanBarangController::class, 'konfirmasi'])->name('konfirmasi');
             Route::post('/store', [PermintaanBarangController::class, 'store'])->name('store');
             Route::get('/riwayat', [PermintaanBarangController::class, 'riwayat'])->name('riwayat');
         });

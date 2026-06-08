@@ -15,7 +15,8 @@ class Permintaan extends Model
         'pic',
         'commodity',
         'tanggal',
+        'status',
         'alamat',
-        'remark',
+        'status',
     ];
 }

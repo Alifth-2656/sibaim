@@ -12,9 +12,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 
     @stack('styles')
@@ -52,35 +61,22 @@
                     </a>
                 </div>
 
-                {{-- MANAGEMENT --}}
-                <div class="pt-4 pb-2 mt-4 border-t border-white/5">
-                    <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Management</p>
-
-                    <a href="{{ route('admin.users.index') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
-                        {{ request()->routeIs('admin.users.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.users.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span class="text-sm">Kelola User</span>
-                    </a>
-<!-- 
-                    <a href="{{ route('admin.inventory.index') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
-                        {{ request()->routeIs('admin.inventory.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.inventory.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        <span class="text-sm">Inventory</span>
-                    </a> -->
-                </div>
-
                 {{-- LAPORAN --}}
                 <div class="pt-4 pb-2 mt-4 border-t border-white/5">
                     <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Laporan</p>
 
+                    {{-- Check Daily --}}
+                    <a href="{{ route('admin.laporan.check_daily') }}"
+                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
+                        {{ request()->routeIs('admin.laporan.check_daily') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.check_daily') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        <span class="text-sm">Check Daily</span>
+                    </a>
+
                     <a href="{{ route('admin.laporan.permintaan') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
+                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
                         {{ request()->routeIs('admin.laporan.permintaan') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
                         <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.permintaan') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -95,6 +91,33 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span class="text-sm">Laporan Stok</span>
+                    </a>
+
+                    <a href="{{ route('admin.laporan.pending_permintaan') }}"
+                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
+                        {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        </svg>
+                        <span class="text-sm">Pending Permintaan</span>
+                    </a>
+
+
+
+
+                </div>
+
+                {{-- MANAGEMENT --}}
+                <div class="pt-4 pb-2 mt-4 border-t border-white/5">
+                    <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Management</p>
+
+                    <a href="{{ route('admin.users.index') }}"
+                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
+                        {{ request()->routeIs('admin.users.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('admin.users.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="text-sm">Kelola User</span>
                     </a>
                 </div>
 
@@ -140,16 +163,18 @@
                         {{-- Notifikasi --}}
                         <div class="relative" id="notifWrapper">
                             @php
-                                $cacheKey = 'notif_' . auth()->user()->role . '_' . auth()->id();
-                                $notifData = cache()->remember($cacheKey, now()->addMinutes(3), function () {
-                                    $role = auth()->user()->role;
-                                    return [
-                                        'unread' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)->where('is_read', false)->count(),
-                                        'items'  => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)->latest()->limit(10)->get(),
-                                    ];
-                                });
-                                $unread = $notifData['unread'];
-                                $notifs = $notifData['items'];
+                            $cacheKey = 'notif_' . auth()->user()->role . '_' . auth()->id();
+                            $notifData = cache()->remember($cacheKey, now()->addMinutes(3), function () {
+                            $role = auth()->user()->role;
+                            return [
+                            'unread' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)
+                            ->where('is_read', false)->count(),
+                            'items' => \App\Models\Notifikasi::whereJsonContains('for_roles', $role)
+                            ->latest()->limit(10)->get()->toArray(),
+                            ];
+                            });
+                            $unread = $notifData['unread'];
+                            $notifs = collect($notifData['items'])->map(fn($n) => (object) $n);
                             @endphp
 
                             <button onclick="toggleNotif(event)" class="relative p-2 text-gray-400 hover:text-gray-600 transition-all">
@@ -186,7 +211,7 @@
                                                 <p class="text-[11px] font-black text-gray-800">{{ $notif->judul }}</p>
                                                 <p class="text-[10px] text-gray-500 mt-0.5 break-words">{{ $notif->pesan }}</p>
                                                 <p class="text-[9px] text-gray-300 mt-1 font-bold uppercase tracking-widest">
-                                                    {{ $notif->created_at->diffForHumans() }}
+                                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
                                                 </p>
                                             </div>
                                             @if(!$notif->is_read)
@@ -223,6 +248,11 @@
                     {{ session('error') }}
                 </div>
                 @endif
+                @if(session('warning'))
+                <div class="mb-6 bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 rounded shadow-sm">
+                    {{ session('warning') }}
+                </div>
+                @endif
 
                 @yield('content')
             </main>
@@ -245,4 +275,5 @@
         });
     </script>
 </body>
+
 </html>

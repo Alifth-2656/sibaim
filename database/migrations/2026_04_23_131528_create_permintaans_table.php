@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('pic');
             $table->string('commodity');
             $table->date('tanggal');
-            $table->text('remark')->nullable();
+            $table->enum('status', ['open', 'close'])->default('open');
             $table->timestamps();
         });
     }
@@ -28,6 +28,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('permintaans');
     }
-
-    
 };

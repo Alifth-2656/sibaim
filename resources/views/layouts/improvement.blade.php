@@ -82,14 +82,16 @@
                     </a>
                 </div>
 
-                <div>
+                <div class="pt-4 pb-2 mt-4 border-t border-white/5">
+                    <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Riwayat Barang</p>
+
                     <a href="{{ route('improvement.history.index') }}"
                         class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
                         {{ request()->routeIs('improvement.history.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
                         <svg class="w-5 h-5 {{ request()->routeIs('improvement.history.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-sm">History Barang</span>
+                        <span class="text-sm">Riwayat Barang</span>
                     </a>
                 </div>
             </nav>

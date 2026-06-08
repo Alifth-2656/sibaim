@@ -5,7 +5,7 @@
 
 @section('content')
 
-<form id="permintaanForm" action="{{ route('comodity.permintaan.store') }}" method="POST">
+<form id="permintaanForm" action="{{ route('comodity.permintaan.cek_stok') }}" method="POST">
     @csrf
 
     <input type="hidden" name="pic" value="{{ $pic }}">
