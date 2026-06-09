@@ -188,12 +188,12 @@
     let lastKeyTime = 0;
     let disconnectTimer = null;
 
-    // ─── MODE TOGGLE ─────────────────────────────────────
-    function setMode(mode) {
-        const manual = document.getElementById('manualSection');
+    // ganti: function setMode(mode) {
+    function switchMode(mode) {
+        const manual = document.getElementById('manual-area'); // ← sesuai ID di HTML
         const scan = document.getElementById('scanSection');
-        const btnManual = document.getElementById('btnManual');
-        const btnScan = document.getElementById('btnScan');
+        const btnManual = document.getElementById('btn-manual'); // ← sesuai ID di HTML
+        const btnScan = document.getElementById('btn-scan'); // ← sesuai ID di HTML
 
         if (mode === 'manual') {
             manual.classList.remove('hidden');
@@ -266,10 +266,21 @@
         }
     }
 
-    function processScanCode(kode) {
+    function speak(text) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'id-ID';
+        utter.rate = 1.1;
+        utter.volume = 1;
+        window.speechSynthesis.speak(utter);
+    }
+
+    function processScanCode(raw) {
+        const parts = raw.split('|');
+        const kode = parts[0].trim();
+        const qty = parts[1] ? parseInt(parts[1].trim()) : 1;
+
         const selector = document.getElementById('itemSelector');
         let found = null;
-
         for (let i = 0; i < selector.options.length; i++) {
             if (selector.options[i].getAttribute('data-kode') === kode) {
                 found = selector.options[i];
@@ -287,18 +298,19 @@
                 hint.innerText = 'Arahkan scanner ke barcode · Hasil otomatis muncul';
                 hint.classList.remove('text-red-400');
             }, 2500);
+            speak('Barang tidak ditemukan');
             return;
         }
 
-        document.getElementById('scanNama').innerText = found.getAttribute('data-nama');
-        document.getElementById('scanKode').innerText = found.getAttribute('data-kode');
-        document.getElementById('scanQty').value = 1;
-        document.getElementById('scanQty').dataset.barangId = found.value;
-        document.getElementById('scanQty').dataset.nama = found.getAttribute('data-nama');
-        document.getElementById('scanQty').dataset.kode = found.getAttribute('data-kode');
-        document.getElementById('scanQty').dataset.stok = found.getAttribute('data-stok'); // ✅ di sini tempatnya
-        document.getElementById('scanResult').classList.remove('hidden');
-        setTimeout(() => document.getElementById('scanQty').focus(), 50);
+        processEntry(
+            found.value, qty,
+            found.getAttribute('data-nama'),
+            found.getAttribute('data-kode'),
+            found.getAttribute('data-stok')
+        );
+        speak(found.getAttribute('data-nama') + ', ' + qty + ' unit, dikeluarkan');
+        scannerInput.value = '';
+        scannerInput.focus();
     }
 
     function confirmScan() {
@@ -306,12 +318,12 @@
         const qty = parseInt(qtyInput.value);
         if (isNaN(qty) || qty < 1) return alert('Masukkan qty yang valid!');
 
-        processSelection(
+        processEntry(
             qtyInput.dataset.barangId,
             qty,
             qtyInput.dataset.nama,
             qtyInput.dataset.kode,
-            qtyInput.dataset.stok // ini stok untuk validasi
+            qtyInput.dataset.stok
         );
 
         document.getElementById('scanResult').classList.add('hidden');
@@ -337,9 +349,9 @@
     // ─── MANUAL ADD ──────────────────────────────────────
     function addToTable() {
         const selector = document.getElementById('itemSelector');
-        const qtyInput = document.getElementById('inputQty');
+        const qtyInput = document.getElementById('qtyInput'); // ← ID yang benar di HTML
 
-        if (!selector.value || !qtyInput.value || qtyInput.value < 1)
+        if (!selector.value || !qtyInput.value || parseInt(qtyInput.value) < 1)
             return alert('Pilih barang & masukkan Qty!');
 
         const opt = selector.options[selector.selectedIndex];
@@ -352,22 +364,19 @@
         );
 
         selector.value = '';
-        qtyInput.value = 1;
+        qtyInput.value = '';
     }
 
     // ─── CORE TABLE ──────────────────────────────────────
     function processEntry(id, qty, nama, kode, stokAwal) {
-        const tableBody = document.getElementById('stokTableBody');
+        const tableBody = document.getElementById('outTableBody'); // ← ID yang benar
         const emptyRow = document.getElementById('emptyRow');
         if (emptyRow) emptyRow.remove();
 
         const existingRow = document.querySelector(`tr[data-id="${id}"]`);
         if (existingRow) {
-            const qtyField = existingRow.querySelector('.qty-text');
-            const hiddenInput = existingRow.querySelector('.qty-input');
-            let newQty = parseInt(hiddenInput.value) + qty;
-            qtyField.innerText = `+${newQty}`;
-            hiddenInput.value = newQty;
+            const input = existingRow.querySelector('.qty-input');
+            input.value = parseInt(input.value) + qty;
             return;
         }
 
@@ -375,24 +384,26 @@
         row.setAttribute('data-id', id);
         row.className = 'border-b border-gray-50 hover:bg-teal-50/20 transition-all';
         row.innerHTML = `
-            <td class="px-8 py-5">
-                <p class="text-[11px] font-black text-gray-800 uppercase tracking-tight">${nama}</p>
-                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-[0.1em] mt-0.5">${kode}</p>
-            </td>
-            <td class="px-8 py-5 text-center text-[11px] font-bold text-gray-400">${stokAwal}</td>
-            <td class="px-8 py-5 text-center">
-                <div class="inline-flex items-center justify-center px-4 py-1.5 bg-teal-50 border border-teal-100 rounded-lg">
-                    <span class="qty-text text-xs font-black text-[#1E4D9C]">+${qty}</span>
-                </div>
-                <input type="hidden" name="items[${id}]" value="${qty}" class="qty-input">
-            </td>
-            <td class="px-8 py-5 text-center">
-                <button type="button" onclick="removeRow(this)" class="p-2 text-red-200 hover:text-red-500 transition-all">
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </td>`;
+        <td class="px-8 py-5">
+            <p class="text-[11px] font-black text-gray-800 uppercase tracking-tight">${nama}</p>
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-[0.1em] mt-0.5">${kode}</p>
+        </td>
+        <td class="px-8 py-5 text-center">
+            <input 
+                type="number" 
+                min="1" 
+                value="${qty}"
+                name="items[${id}]"
+                class="qty-input w-20 text-center px-3 py-1.5 bg-teal-50 border border-teal-100 rounded-lg text-xs font-black text-[#1E4D9C] focus:outline-none focus:ring-2 focus:ring-[#5EEAD4]">
+        </td>
+        <td class="px-8 py-5 text-center">
+            <button type="button" onclick="removeRow(this)" class="p-2 text-red-200 hover:text-red-500 transition-all">
+                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </td>`;
+
         tableBody.appendChild(row);
         itemCount++;
         updateCounter();
@@ -402,14 +413,14 @@
         btn.closest('tr').remove();
         itemCount--;
         updateCounter();
-        const tableBody = document.getElementById('stokTableBody');
+        const tableBody = document.getElementById('outTableBody'); // ← ID yang benar
         if (tableBody.children.length === 0) {
-            tableBody.innerHTML = '<tr id="emptyRow"><td colspan="4" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">Belum ada barang di list</td></tr>';
+            tableBody.innerHTML = '<tr id="emptyRow"><td colspan="3" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">Belum ada barang di list</td></tr>';
         }
     }
 
     function updateCounter() {
-        document.getElementById('itemCount').innerText = itemCount + ' Items';
+        document.getElementById('itemCounter').innerText = itemCount + ' Items'; // ← ID yang benar
     }
 </script>
 @endsection

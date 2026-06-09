@@ -27,10 +27,6 @@
             <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Pindah (Move)</span>
             <span class="text-2xl font-black text-blue-600 mt-2">{{ $totalMove }}</span>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-purple-100 shadow-sm flex flex-col items-center col-span-2 md:col-span-4">
-            <span class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Total STO Dilakukan</span>
-            <span class="text-2xl font-black text-purple-600 mt-2">{{ $totalSto }} kali</span>
-        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

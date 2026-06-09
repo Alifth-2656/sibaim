@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('pic');
-            $table->json('results');          // data hasil check sementara
+            $table->json('results');
+            $table->json('items')->nullable(); // ← tambah ini
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

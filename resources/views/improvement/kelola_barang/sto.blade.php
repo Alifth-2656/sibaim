@@ -10,7 +10,7 @@
     @if(session('error'))
     <div class="mb-6 bg-red-50 border border-red-200 rounded-2xl px-6 py-4 flex items-start gap-3">
         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
         </svg>
         <p class="text-sm font-bold text-red-700">{{ session('error') }}</p>
     </div>
@@ -21,7 +21,7 @@
     <div class="mb-6 bg-blue-50 border border-blue-200 rounded-2xl px-6 py-5 flex flex-col md:flex-row md:items-center gap-4">
         <div class="flex items-start gap-3 flex-1">
             <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
                 <p class="text-sm font-black text-blue-800">Ada Draft STO yang Belum Dikonfirmasi</p>
@@ -37,7 +37,7 @@
                 @csrf
                 <input type="hidden" name="pic" value="{{ $stoDraft->pic }}">
                 @foreach($stoDraft->results as $item)
-                    <input type="hidden" name="items[{{ $item['barang_id'] }}]" value="{{ $item['qty_fisik'] }}">
+                <input type="hidden" name="items[{{ $item['barang_id'] }}]" value="{{ $item['qty_fisik'] }}">
                 @endforeach
                 <button type="submit"
                     class="px-4 py-2 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all">
@@ -168,7 +168,7 @@
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                                     <svg id="scannerIcon" class="w-6 h-6 text-gray-300 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 8H3m18-8h-1M4 4l16 16"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 8H3m18-8h-1M4 4l16 16" />
                                     </svg>
                                 </div>
                                 <input
@@ -222,6 +222,31 @@
                         <span id="itemCount" class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">0 Items</span>
                     </div>
 
+                    {{-- PROGRESS TRACKER --}}
+                    <div class="bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Progress Scan</span>
+                            </div>
+                            <div class="flex items-baseline gap-1">
+                                <span id="progressScanned" class="text-xl font-black text-[#1E4D9C]">0</span>
+                                <span class="text-[10px] font-black text-gray-300">/</span>
+                                <span id="progressTotal" class="text-xl font-black text-gray-300">{{ $barangs->count() }}</span>
+                                <span class="text-[10px] font-bold text-gray-400 ml-1 uppercase tracking-widest">barang</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                            <div id="progressBar" class="h-2 rounded-full bg-[#5EEAD4] transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between mt-2">
+                            <span id="progressPct" class="text-[9px] font-black text-gray-300 uppercase tracking-widest">0%</span>
+                            <span id="progressRemaining" class="text-[9px] font-black text-gray-300 uppercase tracking-widest">{{ $barangs->count() }} belum dicek</span>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto rounded-[2rem] border border-gray-100">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -269,13 +294,41 @@
 
 <script>
     let stoItems = {};
+    const TOTAL_BARANG = {{ $barangs->count() }};
+
+    // ─── PREFILL DARI ULANGI STO ─────────────────────
+    const prefillData = @json($prefill ?? []);
+
+    if (Object.keys(prefillData).length > 0) {
+        const selector = document.getElementById('itemSelector');
+
+        for (const [barangId, qtyFisik] of Object.entries(prefillData)) {
+            let found = null;
+            for (let i = 0; i < selector.options.length; i++) {
+                if (selector.options[i].value == barangId) {
+                    found = selector.options[i];
+                    break;
+                }
+            }
+            if (!found) continue;
+
+            addToTable(
+                found.value,
+                found.getAttribute('data-nama'),
+                found.getAttribute('data-kode'),
+                found.getAttribute('data-satuan'),
+                parseInt(found.getAttribute('data-qty-sistem')),
+                parseInt(qtyFisik)
+            );
+        }
+    }
 
     // ─── MODE TOGGLE ─────────────────────────────────────────
     function setMode(mode) {
         const manual = document.getElementById('manualSection');
-        const scan   = document.getElementById('scanSection');
-        const btnM   = document.getElementById('btnManual');
-        const btnS   = document.getElementById('btnScan');
+        const scan = document.getElementById('scanSection');
+        const btnM = document.getElementById('btnManual');
+        const btnS = document.getElementById('btnScan');
 
         if (mode === 'manual') {
             manual.classList.remove('hidden');
@@ -292,7 +345,6 @@
             btnM.classList.remove('bg-white', 'text-[#1E4D9C]', 'shadow-sm');
             btnM.classList.add('text-gray-400');
 
-            // Auto-focus input scanner saat mode scan aktif
             setTimeout(() => {
                 document.getElementById('scannerInput').focus();
             }, 100);
@@ -300,31 +352,24 @@
     }
 
     // ─── SCANNER PHYSICAL ────────────────────────────────────
-    // Scanner fisik = keyboard emulator, kirim karakter + Enter
-    // Kita deteksi "connected" dari kecepatan input (burst dalam <50ms = scanner)
-
     const scannerInput = document.getElementById('scannerInput');
-    let   lastKeyTime  = 0;
-    let   keyBuffer    = '';
-    let   keyTimer     = null;
-    let   isConnected  = false;
-    let   disconnectTimer = null;
+    let lastKeyTime = 0;
+    let keyBuffer = '';
+    let keyTimer = null;
+    let isConnected = false;
+    let disconnectTimer = null;
 
-    // Deteksi karakter masuk — scanner fisik mengirim semua karakter sangat cepat (< 50ms per char)
     scannerInput.addEventListener('keydown', function(e) {
         const now = Date.now();
         const gap = now - lastKeyTime;
         lastKeyTime = now;
 
-        // Jika karakter datang dalam < 50ms → kemungkinan besar dari scanner fisik
         if (e.key !== 'Enter' && e.key.length === 1) {
             if (gap < 50) {
-                // Scanner terdeteksi → set connected
                 setConnected(true);
             }
         }
 
-        // Enter = scanner selesai kirim kode
         if (e.key === 'Enter') {
             e.preventDefault();
             const kode = this.value.trim();
@@ -335,92 +380,89 @@
         }
     });
 
-    // Saat user klik di luar input (blur) → disconnected
     scannerInput.addEventListener('blur', function() {
-        // Delay sedikit supaya tidak false-positive saat click konfirmasi
         disconnectTimer = setTimeout(() => {
             setConnected(false);
         }, 300);
     });
 
-    // Saat input kembali fokus
     scannerInput.addEventListener('focus', function() {
         clearTimeout(disconnectTimer);
-        // Tidak langsung set connected — tunggu sampai ada input dari scanner
     });
 
     function setConnected(status) {
         isConnected = status;
 
         const badge = document.getElementById('scannerStatusBadge');
-        const dot   = document.getElementById('scannerStatusDot');
-        const text  = document.getElementById('scannerStatusText');
-        const icon  = document.getElementById('scannerIcon');
+        const dot = document.getElementById('scannerStatusDot');
+        const text = document.getElementById('scannerStatusText');
+        const icon = document.getElementById('scannerIcon');
 
         if (status) {
-            // CONNECTED — hijau + ping
             badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200 transition-all duration-500';
-            dot.className   = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
-            text.className  = 'text-[10px] font-black uppercase tracking-widest text-green-600';
-            text.innerText  = 'Connected';
-            icon.className  = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
+            text.className = 'text-[10px] font-black uppercase tracking-widest text-green-600';
+            text.innerText = 'Connected';
+            icon.className = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
 
-            // Auto-disconnect setelah 3 detik tidak ada scan
             clearTimeout(disconnectTimer);
             disconnectTimer = setTimeout(() => setConnected(false), 3000);
         } else {
-            // DISCONNECTED — merah
             badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 transition-all duration-500';
-            dot.className   = 'w-2.5 h-2.5 rounded-full bg-red-400';
-            text.className  = 'text-[10px] font-black uppercase tracking-widest text-red-500';
-            text.innerText  = 'Disconnected';
-            icon.className  = 'w-6 h-6 text-gray-300 transition-all duration-300';
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            text.className = 'text-[10px] font-black uppercase tracking-widest text-red-500';
+            text.innerText = 'Disconnected';
+            icon.className = 'w-6 h-6 text-gray-300 transition-all duration-300';
         }
     }
 
-    function processScanCode(kode) {
+    function speak(text) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'id-ID';
+        utter.rate = 1.1;
+        utter.volume = 1;
+        window.speechSynthesis.speak(utter);
+    }
+
+    function processScanCode(raw) {
+        const parts = raw.split('|');
+        const kode = parts[0].trim();
+        const qty = parts[1] ? parseInt(parts[1].trim()) : 1;
+
         const selector = document.getElementById('itemSelector');
         let found = null;
-
         for (let i = 0; i < selector.options.length; i++) {
-            const opt = selector.options[i];
-            if (opt.getAttribute('data-kode') === kode) {
-                found = opt;
+            if (selector.options[i].getAttribute('data-kode') === kode) {
+                found = selector.options[i];
                 break;
             }
         }
 
         if (!found) {
-            // Flash input merah sebentar sebagai feedback
             scannerInput.classList.add('border-red-300', 'bg-red-50');
             setTimeout(() => scannerInput.classList.remove('border-red-300', 'bg-red-50'), 1000);
-
-            // Tampilkan pesan di hint
             const hint = document.getElementById('scanHint');
-            hint.innerText = '⚠ Kode "' + kode + '" tidak ditemukan di sistem!';
+            hint.innerText = '⚠ Kode "' + kode + '" tidak ditemukan!';
             hint.classList.add('text-red-400');
             setTimeout(() => {
                 hint.innerText = 'Arahkan scanner ke barcode / QR code barang · Hasil otomatis muncul';
                 hint.classList.remove('text-red-400');
             }, 2500);
+            speak('Barang tidak ditemukan');
             return;
         }
 
-        // Tampilkan card konfirmasi qty
-        document.getElementById('scanNama').innerText = found.getAttribute('data-nama');
-        document.getElementById('scanKode').innerText = found.getAttribute('data-kode') + ' · ' + found.getAttribute('data-satuan');
-        document.getElementById('scanQtyFisik').value = 1;
-        document.getElementById('scanResult').classList.remove('hidden');
-
-        // Simpan pending data ke input konfirmasi
-        document.getElementById('scanQtyFisik').dataset.barangId     = found.value;
-        document.getElementById('scanQtyFisik').dataset.nama          = found.getAttribute('data-nama');
-        document.getElementById('scanQtyFisik').dataset.kode         = found.getAttribute('data-kode');
-        document.getElementById('scanQtyFisik').dataset.satuan        = found.getAttribute('data-satuan');
-        document.getElementById('scanQtyFisik').dataset.qtySistem     = found.getAttribute('data-qty-sistem');
-
-        // Focus qty input supaya user bisa langsung ketik qty
-        setTimeout(() => document.getElementById('scanQtyFisik').focus(), 50);
+        addToTable(
+            found.value,
+            found.getAttribute('data-nama'),
+            found.getAttribute('data-kode'),
+            found.getAttribute('data-satuan'),
+            parseInt(found.getAttribute('data-qty-sistem')),
+            qty
+        );
+        speak(found.getAttribute('data-nama') + ', ' + qty + ' unit, ditambahkan');
+        scannerInput.value = '';
+        scannerInput.focus();
     }
 
     function confirmScan() {
@@ -443,7 +485,6 @@
 
         document.getElementById('scanResult').classList.add('hidden');
 
-        // Kembali fokus ke input scanner untuk scan berikutnya
         setTimeout(() => {
             scannerInput.value = '';
             scannerInput.focus();
@@ -503,21 +544,27 @@
             stoItems[id].qtyFisik = qtyFisik;
             updateRow(id);
         } else {
-            stoItems[id] = { nama, kode, satuan, qtySistem, qtyFisik };
+            stoItems[id] = {
+                nama,
+                kode,
+                satuan,
+                qtySistem,
+                qtyFisik
+            };
             renderRow(id);
             updateCounter();
         }
     }
 
     function renderRow(id) {
-        const item    = stoItems[id];
+        const item = stoItems[id];
         const selisih = item.qtyFisik - item.qtySistem;
-        const colorClass  = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
-        const selisihStr  = selisih > 0 ? '+' + selisih : String(selisih);
+        const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
+        const selisihStr = selisih > 0 ? '+' + selisih : String(selisih);
 
         const tbody = document.getElementById('stoTableBody');
-        const tr    = document.createElement('tr');
-        tr.id        = 'row-' + id;
+        const tr = document.createElement('tr');
+        tr.id = 'row-' + id;
         tr.className = 'border-b border-gray-50 hover:bg-purple-50/20 transition-all';
 
         tr.innerHTML = `
@@ -542,20 +589,20 @@
 
         tbody.appendChild(tr);
 
-        const inputFisik   = document.createElement('input');
-        inputFisik.type    = 'number';
-        inputFisik.min     = '0';
-        inputFisik.value   = item.qtyFisik;
+        const inputFisik = document.createElement('input');
+        inputFisik.type = 'number';
+        inputFisik.min = '0';
+        inputFisik.value = item.qtyFisik;
         inputFisik.className = 'w-20 text-center px-3 py-2 bg-gray-50 rounded-xl font-black text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#5EEAD4] border border-gray-100';
         inputFisik.addEventListener('change', function() {
             updateQtyFisik(id, this.value);
         });
 
-        const hiddenInput  = document.createElement('input');
-        hiddenInput.type   = 'hidden';
-        hiddenInput.name   = 'items[' + id + ']';
-        hiddenInput.value  = item.qtyFisik;
-        hiddenInput.id     = 'hidden-' + id;
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'items[' + id + ']';
+        hiddenInput.value = item.qtyFisik;
+        hiddenInput.id = 'hidden-' + id;
 
         const tdFisik = document.getElementById('tdFisik-' + id);
         tdFisik.appendChild(inputFisik);
@@ -567,21 +614,21 @@
     }
 
     function updateRow(id) {
-        const item    = stoItems[id];
+        const item = stoItems[id];
         const selisih = item.qtyFisik - item.qtySistem;
-        const colorClass  = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
+        const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
 
         const selisihEl = document.getElementById('selisih-' + id);
-        const hiddenEl  = document.getElementById('hidden-' + id);
-        const tdFisik   = document.getElementById('tdFisik-' + id);
-        const inputEl   = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
+        const hiddenEl = document.getElementById('hidden-' + id);
+        const tdFisik = document.getElementById('tdFisik-' + id);
+        const inputEl = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
 
         if (selisihEl) {
-            selisihEl.innerText  = selisih > 0 ? '+' + selisih : String(selisih);
-            selisihEl.className  = 'text-sm font-black ' + colorClass;
+            selisihEl.innerText = selisih > 0 ? '+' + selisih : String(selisih);
+            selisihEl.className = 'text-sm font-black ' + colorClass;
         }
         if (hiddenEl) hiddenEl.value = item.qtyFisik;
-        if (inputEl)  inputEl.value  = item.qtyFisik;
+        if (inputEl) inputEl.value = item.qtyFisik;
     }
 
     function updateQtyFisik(id, val) {
@@ -608,7 +655,27 @@
     }
 
     function updateCounter() {
-        document.getElementById('itemCount').innerText = Object.keys(stoItems).length + ' Items';
+        const scanned = Object.keys(stoItems).length;
+        const remaining = TOTAL_BARANG - scanned;
+        const pct = TOTAL_BARANG > 0 ? Math.round((scanned / TOTAL_BARANG) * 100) : 0;
+
+        document.getElementById('itemCount').innerText = scanned + ' Items';
+        document.getElementById('progressScanned').innerText = scanned;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressPct').innerText = pct + '%';
+
+        const remainingEl = document.getElementById('progressRemaining');
+        const barEl = document.getElementById('progressBar');
+
+        if (pct === 100) {
+            barEl.className = 'h-2 rounded-full bg-green-400 transition-all duration-500';
+            remainingEl.innerText = '✓ Semua tercek';
+            remainingEl.className = 'text-[9px] font-black text-green-500 uppercase tracking-widest';
+        } else {
+            barEl.className = 'h-2 rounded-full bg-[#5EEAD4] transition-all duration-500';
+            remainingEl.innerText = remaining + ' belum dicek';
+            remainingEl.className = 'text-[9px] font-black text-gray-300 uppercase tracking-widest';
+        }
     }
 
     function escHtml(str) {

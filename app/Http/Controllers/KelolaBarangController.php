@@ -233,11 +233,14 @@ class KelolaBarangController extends Controller
 
     public function sto()
     {
-        $barangs   = Barang::orderBy('kode_barang')->get();
-        $stoDraft  = StoDraft::where('user_id', Auth::id())->first();
-        return view('improvement.kelola_barang.sto', compact('barangs', 'stoDraft'));
-    }
+        $barangs  = Barang::orderBy('kode_barang')->get();
+        $stoDraft = StoDraft::where('user_id', Auth::id())->first();
 
+        // prefill = raw items dari STO sebelumnya (untuk "Ulangi STO")
+        $prefill = $stoDraft ? ($stoDraft->items ?? []) : [];
+
+        return view('improvement.kelola_barang.sto', compact('barangs', 'stoDraft', 'prefill'));
+    }
     public function checkSto(Request $request)
     {
         $request->validate([
@@ -245,20 +248,12 @@ class KelolaBarangController extends Controller
             'items' => 'required|array',
         ]);
 
-        // Cek apakah STO bulan ini sudah pernah dilakukan
-        $stoBulanIni = RiwayatSto::whereYear('tanggal', now()->year)
-            ->whereMonth('tanggal', now()->month)
-            ->first();
-
-        if ($stoBulanIni) {
-            $tanggalSto = \Carbon\Carbon::parse($stoBulanIni->tanggal)->translatedFormat('d F Y');
-            return back()->with('error', "STO bulan ini sudah dilakukan pada {$tanggalSto} oleh {$stoBulanIni->pic}. STO hanya bisa dilakukan sekali per bulan.");
-        }
+        // ← hapus seluruh blok cek $stoBulanIni
 
         $results = [];
 
         foreach ($request->items as $barangId => $qtyFisik) {
-            $barang = Barang::findOrFail($barangId);
+            $barang    = Barang::findOrFail($barangId);
             $qtyFisik  = (int) $qtyFisik;
             $qtySistem = (int) $barang->qty;
             $selisih   = $qtyFisik - $qtySistem;
@@ -275,18 +270,19 @@ class KelolaBarangController extends Controller
             ];
         }
 
-        // Simpan sebagai draft ke DB (bukan session, agar tidak hilang saat browser tutup)
         StoDraft::updateOrCreate(
             ['user_id' => Auth::id()],
             [
                 'pic'     => $request->pic,
                 'results' => $results,
+                'items'   => $request->items, // ← tambah ini untuk prefill
             ]
         );
 
         return view('improvement.kelola_barang.sto_result', [
             'pic'     => $request->pic,
             'results' => $results,
+            'totalBarang' => Barang::count(),
         ]);
     }
 
