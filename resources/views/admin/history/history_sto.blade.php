@@ -1,4 +1,4 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Riwayat STO')
 @section('subtitle', 'History Stock Take Over')
@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-6">
 
-    <a href="{{ route('improvement.history.index') }}"
+    <a href="{{ route('admin.history.index') }}"
         class="inline-flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-all">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -22,7 +22,7 @@
                     <p class="text-teal-200 text-[10px] mt-1 uppercase tracking-[0.2em] font-bold">Stock Take Over History</p>
                 </div>
                 {{-- FILTER BULAN --}}
-                <form method="GET" action="{{ route('improvement.history.sto.index') }}" class="flex items-center gap-3">
+                <form method="GET" action="{{ route('admin.history.sto.index') }}" class="flex items-center gap-3">
                     <label class="text-[10px] font-black text-teal-200 uppercase tracking-widest whitespace-nowrap">Filter Bulan</label>
                     <input type="month" name="bulan" value="{{ $filterBulan ?? '' }}"
                         class="px-4 py-2 bg-white/10 border border-white/20 text-white text-sm font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5EEAD4] placeholder-white/40 [color-scheme:dark]">
@@ -31,7 +31,7 @@
                         Filter
                     </button>
                     @if($filterBulan)
-                    <a href="{{ route('improvement.history.sto.index') }}"
+                    <a href="{{ route('admin.history.sto.index') }}"
                         class="px-4 py-2 bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/20 transition-all">
                         Reset
                     </a>
@@ -80,7 +80,7 @@
                             @endif
                         </td>
                         <td class="px-8 py-4 text-center">
-                            <a href="{{ route('improvement.history.sto.detail', $sto->id) }}"
+                            <a href="{{ route('admin.history.sto.detail', $sto->id) }}"
                                 class="text-[10px] font-black text-[#1E4D9C] hover:text-[#5EEAD4] uppercase tracking-widest transition-all">
                                 Detail →
                             </a>

@@ -51,11 +51,9 @@
             </a>
             <div class="ml-auto">
                 <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 text-right">
-
                     <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wide">
                         Periode Data
                     </p>
-
                     <p class="mono text-sm font-extrabold text-blue-900">
                         @if($dari === $sampai)
                         {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }}
@@ -65,7 +63,6 @@
                         {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }}
                         @endif
                     </p>
-
                 </div>
             </div>
         </form>
@@ -81,11 +78,9 @@
             <p class="text-sm font-bold text-blue-100 mb-3">
                 Total Jenis Barang
             </p>
-
             <p class="mono text-5xl font-extrabold leading-none text-white">
                 {{ $totalBarang }}
             </p>
-
             <p class="text-xs text-blue-200 mt-3 font-medium">
                 Item terdaftar
             </p>
@@ -96,11 +91,9 @@
             <p class="text-sm font-bold text-gray-700 mb-3">
                 Total Stok
             </p>
-
             <p class="mono text-5xl font-extrabold text-gray-900 leading-none">
                 {{ number_format($totalStok) }}
             </p>
-
             <p class="text-xs text-gray-500 mt-3 font-medium">
                 Unit keseluruhan
             </p>
@@ -111,11 +104,9 @@
             <p class="text-sm font-bold text-gray-700 mb-3">
                 Barang Masuk
             </p>
-
             <p class="mono text-5xl font-extrabold text-emerald-600 leading-none">
                 +{{ number_format($barangMasuk) }}
             </p>
-
             <p class="text-xs text-gray-500 mt-3 font-medium">
                 Bulan ini
             </p>
@@ -126,11 +117,9 @@
             <p class="text-sm font-bold text-gray-700 mb-3">
                 Barang Keluar
             </p>
-
             <p class="mono text-5xl font-extrabold text-orange-500 leading-none">
                 -{{ number_format($barangKeluar) }}
             </p>
-
             <p class="text-xs text-gray-500 mt-3 font-medium">
                 Bulan ini
             </p>
@@ -147,15 +136,9 @@
             <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl">
                 ✓
             </div>
-
             <div>
-                <p class="text-sm font-bold text-gray-700">
-                    Stock Aman
-                </p>
-
-                <p class="mono text-3xl font-extrabold text-emerald-600">
-                    {{ $stockAman }}
-                </p>
+                <p class="text-sm font-bold text-gray-700">Stock Aman</p>
+                <p class="mono text-3xl font-extrabold text-emerald-600">{{ $stockAman }}</p>
             </div>
         </div>
 
@@ -163,15 +146,9 @@
             <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-xl">
                 ⚠
             </div>
-
             <div>
-                <p class="text-sm font-bold text-gray-700">
-                    Stok Kurang
-                </p>
-
-                <p class="mono text-3xl font-extrabold text-amber-500">
-                    {{ $stockKurang }}
-                </p>
+                <p class="text-sm font-bold text-gray-700">Stok Kurang</p>
+                <p class="mono text-3xl font-extrabold text-amber-500">{{ $stockKurang }}</p>
             </div>
         </div>
 
@@ -179,15 +156,9 @@
             <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center text-xl">
                 ✕
             </div>
-
             <div>
-                <p class="text-sm font-bold text-gray-700">
-                    Stok Habis
-                </p>
-
-                <p class="mono text-3xl font-extrabold text-red-500">
-                    {{ $stockHabis }}
-                </p>
+                <p class="text-sm font-bold text-gray-700">Stok Habis</p>
+                <p class="mono text-3xl font-extrabold text-red-500">{{ $stockHabis }}</p>
             </div>
         </div>
 
@@ -206,9 +177,12 @@
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                         Barang Masuk vs Barang Keluar
                     </p>
-
                     <p class="text-[10px] text-gray-300 font-medium mt-0.5">
-                        Perbandingan quantity per barang
+                        @if($dari === $sampai)
+                        {{ \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') }}
+                        @else
+                        {{ \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') }} — {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') }}
+                        @endif
                     </p>
                 </div>
             </div>
@@ -229,51 +203,28 @@
             <table class="w-full">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">
-                            Barang
-                        </th>
-
-                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">
-                            Qty
-                        </th>
+                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Barang</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">Qty</th>
                     </tr>
                 </thead>
-
                 <tbody class="divide-y divide-gray-100">
-
                     @forelse($stokKosong as $barang)
-
                     <tr class="hover:bg-red-50 transition">
-
                         <td class="px-4 py-3">
-                            <div class="font-semibold text-gray-700">
-                                {{ $barang->nama_barang }}
-                            </div>
-
-                            <div class="text-xs text-gray-400 mono">
-                                {{ $barang->kode_barang }}
-                            </div>
+                            <div class="font-semibold text-gray-700">{{ $barang->nama_barang }}</div>
+                            <div class="text-xs text-gray-400 mono">{{ $barang->kode_barang }}</div>
                         </td>
-
                         <td class="px-4 py-3 text-center">
-                            <span class="mono font-bold text-red-500">
-                                {{ $barang->qty }}
-                            </span>
+                            <span class="mono font-bold text-red-500">{{ $barang->qty }}</span>
                         </td>
-
                     </tr>
-
                     @empty
-
                     <tr>
-                        <td colspan="2"
-                            class="py-10 text-center text-green-500 font-semibold">
+                        <td colspan="2" class="py-10 text-center text-green-500 font-semibold">
                             ✓ Tidak ada stok kosong
                         </td>
                     </tr>
-
                     @endforelse
-
                 </tbody>
             </table>
 
@@ -290,7 +241,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Permintaan Terbaru</p>
-                <a href="{{ route('admin.laporan.permintaan') }}"
+                <a href="{{ route('admin.history.permintaan.index') }}"
                     class="text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-blue-400 transition-all">
                     Lihat Semua →
                 </a>
@@ -365,135 +316,25 @@
                 </tbody>
             </table>
         </div>
+
     </div>
 
 </div>
 
 @push('scripts')
 <script>
-    // ── Data dari controller ───────────────────────────
-    const labels = @json($labels);
-    const dataMasuk = @json($dataMasuk);
-    const dataKeluar = @json($dataKeluar);
-
-
-
-    // ── Font default Chart.js ──────────────────────────
     Chart.defaults.font.family = "'DM Sans', sans-serif";
     Chart.defaults.font.size = 11;
     Chart.defaults.color = '#374151';
-
-    // ── LINE CHART — Masuk vs Keluar ───────────────────
-    new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                    label: 'Masuk',
-                    data: dataMasuk,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16,185,129,0.08)',
-                    borderWidth: 2.5,
-                    tension: 0.35,
-                    fill: true,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                },
-                {
-                    label: 'Keluar',
-                    data: dataKeluar,
-                    borderColor: '#f97316',
-                    backgroundColor: 'rgba(249,115,22,0.08)',
-                    borderWidth: 2.5,
-                    tension: 0.35,
-                    fill: true,
-                    pointBackgroundColor: '#f97316',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleFont: {
-                        family: "'DM Sans', sans-serif",
-                        weight: '700',
-                        size: 11
-                    },
-                    bodyFont: {
-                        family: "'DM Mono', monospace",
-                        size: 12
-                    },
-                    padding: 12,
-                    cornerRadius: 10,
-                    callbacks: {
-                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} unit`
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: '#f1f5f9',
-                        lineWidth: 1
-                    },
-                    ticks: {
-                        font: {
-                            family: "'DM Mono', monospace",
-                            size: 10
-                        },
-                        stepSize: 1,
-                    },
-                    border: {
-                        display: false
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            family: "'DM Sans', sans-serif",
-                            size: 11,
-                            weight: '600'
-                        }
-                    },
-                    border: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
 
     const commodityLabels = @json($commodityLabels);
     const commodityMasuk = @json($commodityMasuk);
     const commodityKeluar = @json($commodityKeluar);
 
     new Chart(document.getElementById('commodityChart'), {
-
         type: 'bar',
-
         data: {
             labels: commodityLabels,
-
             datasets: [{
                     label: 'Barang Masuk',
                     data: commodityMasuk,
@@ -510,10 +351,8 @@
                 }
             ]
         },
-
         options: {
             responsive: true,
-
             plugins: {
                 legend: {
                     position: 'top',
@@ -522,15 +361,22 @@
                     }
                 }
             },
-
             scales: {
                 y: {
                     beginAtZero: true,
+                    min: 0,
                     grid: {
                         color: '#f1f5f9'
+                    },
+                    ticks: {
+                        precision: 0,
+                        stepSize: 1,
+                        callback: function(value) {
+                            if (Math.floor(value) === value) return value;
+                            return null;
+                        }
                     }
                 },
-
                 x: {
                     grid: {
                         display: false
@@ -539,7 +385,6 @@
             }
         }
     });
-    
 </script>
 @endpush
 

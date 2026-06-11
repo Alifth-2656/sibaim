@@ -14,7 +14,7 @@
         <button onclick="document.getElementById('modalTambah').classList.remove('hidden')"
             class="flex items-center gap-2 bg-[#1E4D9C] text-white px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-[#5EEAD4] hover:text-[#1E4D9C] transition-all shadow-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
             </svg>
             Tambah User
         </button>
@@ -47,7 +47,6 @@
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest
                             {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-600' : '' }}
-                            {{ $user->role === 'improvement' ? 'bg-blue-100 text-blue-600' : '' }}
                             {{ $user->role === 'comodity' ? 'bg-teal-100 text-teal-600' : '' }}">
                             {{ $user->role }}
                         </span>
@@ -59,14 +58,14 @@
                             <button onclick="openEdit({{ $user->id }}, '{{ $user->username }}', '{{ $user->role }}')"
                                 class="p-2 text-blue-400 hover:text-[#1E4D9C] transition-all" title="Edit">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
                             {{-- Reset Password --}}
                             <button onclick="openReset({{ $user->id }}, '{{ $user->username }}')"
                                 class="p-2 text-yellow-400 hover:text-yellow-600 transition-all" title="Reset Password">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                 </svg>
                             </button>
                             {{-- Hapus --}}
@@ -74,7 +73,7 @@
                             <button onclick="openHapus({{ $user->id }}, '{{ $user->username }}')"
                                 class="p-2 text-red-300 hover:text-red-500 transition-all" title="Hapus">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
                             @endif
@@ -97,17 +96,17 @@
             </p>
             <div class="flex items-center gap-2">
                 @if($users->onFirstPage())
-                    <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">← Prev</span>
+                <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">← Prev</span>
                 @else
-                    <a href="{{ $users->previousPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-[#5EEAD4] transition-all">← Prev</a>
+                <a href="{{ $users->previousPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-[#5EEAD4] transition-all">← Prev</a>
                 @endif
                 @foreach($users->getUrlRange(1, $users->lastPage()) as $page => $url)
-                    <a href="{{ $url }}" class="w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all {{ $page == $users->currentPage() ? 'bg-[#1E4D9C] text-white' : 'text-gray-400 hover:bg-gray-100' }}">{{ $page }}</a>
+                <a href="{{ $url }}" class="w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all {{ $page == $users->currentPage() ? 'bg-[#1E4D9C] text-white' : 'text-gray-400 hover:bg-gray-100' }}">{{ $page }}</a>
                 @endforeach
                 @if($users->hasMorePages())
-                    <a href="{{ $users->nextPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-[#5EEAD4] transition-all">Next →</a>
+                <a href="{{ $users->nextPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-[#5EEAD4] transition-all">Next →</a>
                 @else
-                    <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">Next →</span>
+                <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">Next →</span>
                 @endif
             </div>
         </div>
@@ -136,7 +135,6 @@
                 <select name="role" required class="w-full px-4 py-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-[#5EEAD4] font-bold text-gray-700">
                     <option value="">-- Pilih Role --</option>
                     <option value="admin">Admin</option>
-                    <option value="improvement">Improvement</option>
                     <option value="comodity">Comodity</option>
                 </select>
             </div>
@@ -170,7 +168,6 @@
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role</label>
                 <select name="role" id="editRole" required class="w-full px-4 py-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-[#5EEAD4] font-bold text-gray-700">
                     <option value="admin">Admin</option>
-                    <option value="improvement">Improvement</option>
                     <option value="comodity">Comodity</option>
                 </select>
             </div>
@@ -225,7 +222,7 @@
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
         <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
         </div>
         <h3 class="text-lg font-black text-gray-800 uppercase tracking-tight mb-1">Hapus User?</h3>

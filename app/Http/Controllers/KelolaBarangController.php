@@ -60,13 +60,13 @@ class KelolaBarangController extends Controller
             ->orderBy('qty')
             ->paginate(5, ['*'], 'low_page');
 
-        return view('improvement.kelola_barang.index', compact('aktivitas', 'lowStocks'));
+        return view('admin.kelola_barang.index', compact('aktivitas', 'lowStocks'));
     }
 
     // ================= TAMBAH BARANG =================
     public function create()
     {
-        return view('improvement.kelola_barang.tambah_barang');
+        return view('admin.kelola_barang.tambah_barang');
     }
 
     public function store(Request $request)
@@ -109,7 +109,7 @@ class KelolaBarangController extends Controller
                 ]);
             }
 
-            return redirect()->route('improvement.kelola_barang.index')
+            return redirect()->route('admin.kelola_barang.index')
                 ->with('success', 'Barang berhasil ditambahkan');
         });
     }
@@ -118,7 +118,7 @@ class KelolaBarangController extends Controller
     public function stok()
     {
         $barangs = Barang::all();
-        return view('improvement.kelola_barang.tambah_stok', compact('barangs'));
+        return view('admin.kelola_barang.tambah_stok', compact('barangs'));
     }
 
     public function storeStok(Request $request)
@@ -139,12 +139,12 @@ class KelolaBarangController extends Controller
                         'barang_id'  => $barang->id,
                         'qty'        => $qty,
                         'pic'        => $request->pic,
-                        'keterangan' => 'Penambahan stok via Improvement Form',
+                        'keterangan' => 'Penambahan stok via admin Form',
                     ]);
                 }
             });
 
-            return redirect()->route('improvement.kelola_barang.index')
+            return redirect()->route('admin.kelola_barang.index')
                 ->with('success', 'Semua stok berhasil diperbarui dan tercatat di riwayat.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -155,7 +155,7 @@ class KelolaBarangController extends Controller
     public function pindah()
     {
         $barangs = Barang::all();
-        return view('improvement.kelola_barang.pindah_rak', compact('barangs'));
+        return view('admin.kelola_barang.pindah_rak', compact('barangs'));
     }
 
     public function updatePindah(Request $request)
@@ -182,7 +182,7 @@ class KelolaBarangController extends Controller
                 }
             });
 
-            return redirect()->route('improvement.kelola_barang.index')
+            return redirect()->route('admin.kelola_barang.index')
                 ->with('success', 'Lokasi rak berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memindahkan rak: ' . $e->getMessage());
@@ -193,7 +193,7 @@ class KelolaBarangController extends Controller
     public function keluar()
     {
         $barangs = Barang::all();
-        return view('improvement.kelola_barang.barang_keluar', compact('barangs'));
+        return view('admin.kelola_barang.barang_keluar', compact('barangs'));
     }
 
     public function storeKeluar(Request $request)
@@ -205,31 +205,30 @@ class KelolaBarangController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                foreach ($request->items as $item) {
-                    $barang = Barang::findOrFail($item['barang_id']);
+                foreach ($request->items as $barang_id => $qty) {  // ← ubah ke key => value
+                    $barang = Barang::findOrFail($barang_id);
 
-                    if ($barang->qty < $item['qty']) {
+                    if ($barang->qty < $qty) {
                         throw new \Exception("Stok barang {$barang->nama_barang} tidak mencukupi!");
                     }
 
-                    $barang->decrement('qty', $item['qty']);
+                    $barang->decrement('qty', $qty);
 
-                    // Pake Model RiwayatOut
                     RiwayatOut::create([
                         'barang_id'  => $barang->id,
-                        'qty'        => $item['qty'],
+                        'qty'        => $qty,
                         'pic'        => $request->pic,
                         'keterangan' => $request->keterangan ?? 'Barang keluar via Form Kelola Barang',
                     ]);
                 }
             });
 
-            return redirect()->route('improvement.kelola_barang.index')
+            return redirect()->route('admin.kelola_barang.index')
                 ->with('success', 'Transaksi barang keluar berhasil diproses.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses barang keluar: ' . $e->getMessage());
         }
-    }
+    }   
 
     public function sto()
     {
@@ -239,7 +238,7 @@ class KelolaBarangController extends Controller
         // prefill = raw items dari STO sebelumnya (untuk "Ulangi STO")
         $prefill = $stoDraft ? ($stoDraft->items ?? []) : [];
 
-        return view('improvement.kelola_barang.sto', compact('barangs', 'stoDraft', 'prefill'));
+        return view('admin.kelola_barang.sto', compact('barangs', 'stoDraft', 'prefill'));
     }
     public function checkSto(Request $request)
     {
@@ -279,7 +278,7 @@ class KelolaBarangController extends Controller
             ]
         );
 
-        return view('improvement.kelola_barang.sto_result', [
+        return view('admin.kelola_barang.sto_result', [
             'pic'     => $request->pic,
             'results' => $results,
             'totalBarang' => Barang::count(),
@@ -289,7 +288,7 @@ class KelolaBarangController extends Controller
     public function discardStoDraft()
     {
         StoDraft::where('user_id', Auth::id())->delete();
-        return redirect()->route('improvement.kelola_barang.sto')
+        return redirect()->route('admin.kelola_barang.sto')
             ->with('success', 'Draft STO dihapus. Silakan mulai STO baru.');
     }
 
@@ -298,7 +297,7 @@ class KelolaBarangController extends Controller
         $draft = StoDraft::where('user_id', Auth::id())->first();
 
         if (!$draft) {
-            return redirect()->route('improvement.kelola_barang.sto')
+            return redirect()->route('admin.kelola_barang.sto')
                 ->with('error', 'Draft STO tidak ditemukan. Silakan ulangi proses STO.');
         }
 
@@ -343,7 +342,7 @@ class KelolaBarangController extends Controller
             DB::commit();
             $draft->delete();
 
-            return redirect()->route('improvement.kelola_barang.index')
+            return redirect()->route('admin.kelola_barang.index')
                 ->with('success', 'STO berhasil disimpan. ' . count($adjustItems) . ' item di-adjust.');
         } catch (\Exception $e) {
             DB::rollBack();

@@ -1,17 +1,9 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Data Inventory')
 
 @section('content')
-@php
-$stats = [
-'not_used' => $barangs->where('qty', 0)->where('max', 0)->where('min', 0)->count(),
-'kosong' => $barangs->where('qty', 0)->filter(fn($i) => !($i->max == 0 && $i->min == 0))->count(),
-'shortage' => $barangs->filter(fn($i) => $i->qty > 0 && $i->qty < $i->min)->count(),
-    'over' => $barangs->filter(fn($i) => $i->qty > $i->max)->count(),
-    'aman' => $barangs->filter(fn($i) => $i->qty >= $i->min && $i->qty <= $i->max && $i->qty > 0)->count(),
-        ];
-        @endphp
+
 
         <div class="space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
@@ -32,7 +24,9 @@ $stats = [
                 </div>
             </div>
 
-            <form action="{{ route('improvement.inventory.index') }}" method="GET" class="relative">
+
+
+            <form action="{{ route('admin.inventory.index') }}" method="GET" class="relative">
                 <input type="hidden" name="view" value="{{ request('view', 'table') }}">
                 <input type="text" name="search" value="{{ request('search') }}"
                     placeholder="Cari kode atau nama barang..."
@@ -43,6 +37,8 @@ $stats = [
                     </svg>
                 </button>
             </form>
+
+
 
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
@@ -67,6 +63,28 @@ $stats = [
                 </div>
             </div>
 
+            <form action="{{ route('admin.inventory.index') }}" method="GET" class="flex flex-wrap gap-2">
+                <input type="hidden" name="view" value="{{ request('view', 'table') }}">
+                <input type="hidden" name="search" value="{{ request('search') }}">
+
+                @foreach([
+                '' => 'Semua',
+                'aman' => 'Aman',
+                'shortage' => 'Shortage',
+                'kosong' => 'Kosong',
+                'over' => 'Over',
+                'not_used' => 'Not Used',
+                ] as $val => $label)
+                <button type="submit" name="status" value="{{ $val }}"
+                    class="px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full transition-all
+        {{ request('status', '') === $val
+            ? 'bg-[#1E4D9C] text-white shadow-lg'
+            : 'bg-white text-gray-400 border border-gray-200 hover:border-[#1E4D9C] hover:text-[#1E4D9C]' }}">
+                    {{ $label }}
+                </button>
+                @endforeach
+            </form>
+
             @if(request('view', 'table') == 'table')
             <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -85,7 +103,7 @@ $stats = [
                     <tbody class="text-xs font-semibold text-gray-600">
                         @foreach($barangs as $index => $item)
                         <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
-                            <td class="p-4">{{ $index + 1 }}</td>
+                            <td class="p-4">{{ $barangs->firstItem() + $loop->index }}</td>
                             <td class="p-4 font-black text-gray-800">{{ $item->kode_barang }}</td>
                             <td class="p-4">{{ $item->nama_barang }}</td>
                             <td class="p-4">{{ $item->satuan }}</td>
@@ -105,28 +123,23 @@ $stats = [
                             Menampilkan {{ $barangs->firstItem() }}–{{ $barangs->lastItem() }} dari {{ $barangs->total() }} barang
                         </p>
                         <div class="flex items-center gap-2">
-                            {{-- Prev --}}
                             @if($barangs->onFirstPage())
                             <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
                             @else
-                            <a href="{{ $barangs->previousPageUrl() }}&view={{ request('view', 'table') }}&search={{ request('search') }}"
+                            <a href="{{ $barangs->previousPageUrl() }}"
                                 class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
                             @endif
 
-                            {{-- Nomor halaman --}}
                             @foreach($barangs->getUrlRange(1, $barangs->lastPage()) as $page => $url)
-                            <a href="{{ $url }}&view={{ request('view', 'table') }}&search={{ request('search') }}"
+                            <a href="{{ $url }}"
                                 class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all
-                {{ $page == $barangs->currentPage()
-                    ? 'bg-[#1E4D9C] text-white shadow-lg'
-                    : 'text-gray-400 hover:bg-gray-100' }}">
+            {{ $page == $barangs->currentPage() ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
                                 {{ $page }}
                             </a>
                             @endforeach
 
-                            {{-- Next --}}
                             @if($barangs->hasMorePages())
-                            <a href="{{ $barangs->nextPageUrl() }}&view={{ request('view', 'table') }}&search={{ request('search') }}"
+                            <a href="{{ $barangs->nextPageUrl() }}"
                                 class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
                             @else
                             <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>

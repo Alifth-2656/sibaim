@@ -9,6 +9,7 @@
     <title>@yield('title', 'Dashboard') - SIBAIM</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -61,66 +62,173 @@
                     </a>
                 </div>
 
-                {{-- LAPORAN --}}
-                <div class="pt-4 pb-2 mt-4 border-t border-white/5">
-                    <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Laporan</p>
-
-                    {{-- Check Daily --}}
-                    <a href="{{ route('admin.laporan.check_daily') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
-                        {{ request()->routeIs('admin.laporan.check_daily') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.check_daily') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                        </svg>
-                        <span class="text-sm">Check Daily</span>
-                    </a>
-
-                    <a href="{{ route('admin.laporan.permintaan') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
-                        {{ request()->routeIs('admin.laporan.permintaan') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.permintaan') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span class="text-sm">Laporan Permintaan</span>
-                    </a>
-
-                    <a href="{{ route('admin.laporan.stok') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
-                        {{ request()->routeIs('admin.laporan.stok') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.stok') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="text-sm">Laporan Stok</span>
-                    </a>
-
-                    <a href="{{ route('admin.laporan.pending_permintaan') }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
-                        {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                        </svg>
-                        <span class="text-sm">Pending Permintaan</span>
-                    </a>
-
-
-
-
-                </div>
-
                 {{-- MANAGEMENT --}}
                 <div class="pt-4 pb-2 mt-4 border-t border-white/5">
                     <p class="px-4 text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.2em] mb-2">Management</p>
 
-                    <a href="{{ route('admin.users.index') }}"
+                    <a href="{{ route('admin.inventory.index') }}"
                         class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
-                        {{ request()->routeIs('admin.users.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('admin.users.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        {{ request()->routeIs('admin.inventory.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('admin.inventory.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <span class="text-sm">Kelola User</span>
+                        <span class="text-sm">Inventory</span>
                     </a>
-                </div>
 
+                    {{-- Kelola Barang (Operasional) --}}
+                    <div x-data="{ open: {{ request()->routeIs('admin.kelola_barang.create', 'admin.kelola_barang.stok', 'admin.kelola_barang.pindah', 'admin.kelola_barang.keluar', 'admin.kelola_barang.sto') ? 'true' : 'false' }} }">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group mt-1
+            {{ request()->routeIs('admin.kelola_barang.create', 'admin.kelola_barang.stok', 'admin.kelola_barang.pindah', 'admin.kelola_barang.keluar', 'admin.kelola_barang.sto') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                            <div class="flex items-center gap-4">
+                                {{-- Icon: Shelves/Grid --}}
+                                <svg class="w-5 h-5 {{ request()->routeIs('admin.kelola_barang.create', 'admin.kelola_barang.stok', 'admin.kelola_barang.pindah', 'admin.kelola_barang.keluar', 'admin.kelola_barang.sto') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
+                                <span class="text-sm">Kelola Barang</span>
+                            </div>
+                            <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition class="mt-1 ml-4 pl-4 border-l border-white/10 space-y-1">
+                            <a href="{{ route('admin.kelola_barang.create') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                {{ request()->routeIs('admin.kelola_barang.create') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Barang
+                            </a>
+
+                            <a href="{{ route('admin.kelola_barang.stok') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                {{ request()->routeIs('admin.kelola_barang.stok') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                Update Stock
+                            </a>
+
+                            <a href="{{ route('admin.kelola_barang.pindah') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                {{ request()->routeIs('admin.kelola_barang.pindah') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Pindah Rak
+                            </a>
+
+                            <a href="{{ route('admin.kelola_barang.keluar') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                {{ request()->routeIs('admin.kelola_barang.keluar') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H3m12 0l-4-4m4 4l-4 4" />
+                                </svg>
+                                Barang Keluar
+                            </a>
+
+                            <a href="{{ route('admin.kelola_barang.sto') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+                {{ request()->routeIs('admin.kelola_barang.sto') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Stock Take Over
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Riwayat Barang (dengan submenu) --}}
+                    <div x-data="{ open: {{ request()->routeIs('admin.history.*') ? 'true' : 'false' }} }">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group mt-1
+        {{ request()->routeIs('admin.history.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                            <div class="flex items-center gap-4">
+                                <svg class="w-5 h-5 {{ request()->routeIs('admin.history.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-sm">Riwayat Barang</span>
+                            </div>
+                            <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition class="mt-1 ml-4 pl-4 border-l border-white/10 space-y-1">
+                            <a href="{{ route('admin.history.in.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+            {{ request()->routeIs('admin.history.in.*') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7-7 7" />
+                                </svg>
+                                Riwayat Masuk
+                            </a>
+
+                            <a href="{{ route('admin.history.out.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+            {{ request()->routeIs('admin.history.out.*') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H3m12 0l-4-4m4 4l-4 4" />
+                                </svg>
+                                Riwayat Keluar
+                            </a>
+
+                            <a href="{{ route('admin.history.move.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+            {{ request()->routeIs('admin.history.move.*') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                                Riwayat Move
+                            </a>
+
+                            <a href="{{ route('admin.history.sto.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+            {{ request()->routeIs('admin.history.sto.*') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Riwayat STO
+                            </a>
+
+                            <a href="{{ route('admin.history.permintaan.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+            {{ request()->routeIs('admin.history.permintaan.*') ? 'bg-white/20 text-white font-bold' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Riwayat Permintaan
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a href="{{ route('admin.laporan.pending_permintaan') }}"
+                            class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group mt-1
+                        {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                            <svg class="w-5 h-5 {{ request()->routeIs('admin.laporan.pending_permintaan') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                            <span class="text-sm">Pending Permintaan</span>
+                        </a>
+                    </div>
+
+                    <div>
+                        <a href="{{ route('admin.users.index') }}"
+                            class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
+                        {{ request()->routeIs('admin.users.*') ? 'bg-[#5EEAD4] text-[#1E4D9C] font-bold shadow-lg' : 'text-blue-100 hover:bg-white/10' }}">
+                            <svg class="w-5 h-5 {{ request()->routeIs('admin.users.*') ? 'text-[#1E4D9C]' : 'text-blue-300 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span class="text-sm">Kelola User</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
             {{-- USER INFO --}}

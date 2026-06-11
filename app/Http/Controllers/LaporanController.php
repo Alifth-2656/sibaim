@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permintaan;
-use App\Models\PermintaanDetail;
 use App\Models\Barang;
-use App\Models\RiwayatIn;
 use App\Models\LaporanStokHabis;
 use App\Models\RiwayatOut;
-use App\Models\RiwayatMove;
 use App\Exports\LaporanStokExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,28 +14,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanController extends Controller
 {
-    public function laporanPermintaan(Request $request)
-    {
-        $query = Permintaan::with('details.barang')->latest();
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('pic', 'like', '%' . $request->search . '%')
-                    ->orWhere('commodity', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->filled('dari')) {
-            $query->whereDate('tanggal', '>=', $request->dari);
-        }
-        if ($request->filled('sampai')) {
-            $query->whereDate('tanggal', '<=', $request->sampai);
-        }
-
-        $permintaans = $query->paginate(10)->withQueryString();
-
-        return view('admin.laporan.permintaan', compact('permintaans'));
-    }
 
     public function laporanStok(Request $request)
     {
@@ -135,7 +110,7 @@ class LaporanController extends Controller
                     'barang_id'  => $barang->id,
                     'qty'        => $detail->qty,
                     'pic'        => $permintaan->pic,
-                    'keterangan' => 'Permintaan Barang - ID: ' . $permintaan->id,
+                    'keterangan' => 'Permintaan Barang',
                 ]);
             }
 
@@ -168,59 +143,5 @@ class LaporanController extends Controller
         $laporan->update(['status' => 'ditangani']);
 
         return back()->with('success', 'Laporan ditandai sudah ditangani.');
-    }
-
-    // =====================
-    // CHECK DAILY
-    // =====================
-    public function checkDaily(Request $request)
-    {
-        $tanggal = $request->filled('tanggal')
-            ? \Carbon\Carbon::parse($request->tanggal)
-            : now();
-
-        $tgl = $tanggal->toDateString(); // format Y-m-d
-
-        // Detail semua transaksi masuk hari ini
-        $detailMasuk = RiwayatIn::whereDate('created_at', $tgl)
-            ->with('barang:id,kode_barang,nama_barang,satuan')
-            ->latest()
-            ->get();
-
-        // Detail semua transaksi keluar hari ini
-        $detailKeluar = RiwayatOut::whereDate('created_at', $tgl)
-            ->with('barang:id,kode_barang,nama_barang,satuan')
-            ->latest()
-            ->get();
-
-        // Detail semua transaksi pindah hari ini
-        $detailPindah = RiwayatMove::whereDate('created_at', $tgl)
-            ->with('barang:id,kode_barang,nama_barang,satuan')
-            ->latest()
-            ->get();
-
-        // Stok kritis saat ini (qty <= min)
-        $stokKritis = Barang::whereColumn('qty', '<=', 'min')
-            ->orderBy('qty')
-            ->get();
-
-        // Summary angka untuk kartu di atas
-        $summary = [
-            'total_masuk'      => $detailMasuk->sum('qty'),
-            'total_keluar'     => $detailKeluar->sum('qty'),
-            'total_pindah'     => $detailPindah->count(),
-            'transaksi_masuk'  => $detailMasuk->count(),
-            'transaksi_keluar' => $detailKeluar->count(),
-            'stok_kritis'      => $stokKritis->count(),
-        ];
-
-        return view('admin.laporan.check_daily', compact(
-            'tanggal',
-            'detailMasuk',
-            'detailKeluar',
-            'detailPindah',
-            'stokKritis',
-            'summary'
-        ));
     }
 }

@@ -1,11 +1,11 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Tambah Barang')
 @section('subtitle', 'Menambahkan barang baru ke sistem gudang')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <form method="POST" action="{{ route('improvement.kelola_barang.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.kelola_barang.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
@@ -101,7 +101,7 @@
                 <!-- FOOTER / ACTION -->
                 <div class="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-100 gap-6">
                     <!-- Tombol Kembali -->
-                    <a href="{{ route('improvement.kelola_barang.index') }}" class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-600 transition-all flex items-center gap-2">
+                    <a href="{{ route('admin.kelola_barang.index') }}" class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-600 transition-all flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>

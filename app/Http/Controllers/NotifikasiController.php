@@ -29,6 +29,6 @@ class NotifikasiController extends Controller
 
         $permintaan = Permintaan::with('details.barang')->findOrFail($permintaanId);
 
-        return view('improvement.notifikasi.detail', compact('permintaan'));
+        return view('admin.notifikasi.detail', compact('permintaan'));
     }
 }

@@ -1,4 +1,4 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Stock Take Over (STO)')
 @section('subtitle', 'Pengecekan stok fisik vs data sistem')
@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="flex gap-3 flex-shrink-0">
-            <form method="POST" action="{{ route('improvement.kelola_barang.sto.check') }}" id="resumeForm">
+            <form method="POST" action="{{ route('admin.kelola_barang.sto.check') }}" id="resumeForm">
                 @csrf
                 <input type="hidden" name="pic" value="{{ $stoDraft->pic }}">
                 @foreach($stoDraft->results as $item)
@@ -44,7 +44,7 @@
                     Lanjutkan →
                 </button>
             </form>
-            <form method="POST" action="{{ route('improvement.kelola_barang.sto.discard_draft') }}">
+            <form method="POST" action="{{ route('admin.kelola_barang.sto.discard_draft') }}">
                 @csrf
                 <button type="submit"
                     class="px-4 py-2 bg-white border border-blue-200 text-blue-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-50 transition-all"
@@ -56,7 +56,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('improvement.kelola_barang.sto.check') }}" id="stoForm">
+    <form method="POST" action="{{ route('admin.kelola_barang.sto.check') }}" id="stoForm">
         @csrf
 
         <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
@@ -271,7 +271,7 @@
 
                 {{-- FOOTER --}}
                 <div class="flex flex-col md:flex-row items-center justify-between pt-10 border-t border-gray-100 gap-6">
-                    <a href="{{ route('improvement.kelola_barang.index') }}"
+                    <a href="{{ route('admin.kelola_barang.index') }}"
                         class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-600 transition-all flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

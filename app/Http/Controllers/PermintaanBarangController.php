@@ -212,7 +212,7 @@ class PermintaanBarangController extends Controller
                 $namaList[] = "{$barang->nama_barang} (Kode: {$barang->kode_barang}, Qty: {$qty})";
             }
 
-            // --- Notifikasi ke admin & improvement ---
+            // --- Notifikasi ke admin ---
             $pesanNotif = "Comodity ({$pending['pic']}) mengajukan permintaan barang: " . implode('; ', $namaList);
 
             if (!empty($itemsTidakDitemukan)) {
@@ -225,7 +225,7 @@ class PermintaanBarangController extends Controller
                 'pesan'         => $pesanNotif,
                 'tipe'          => 'permintaan',
                 'permintaan_id' => $permintaan->id,
-                'for_roles'     => ['admin', 'improvement'],
+                'for_roles'     => ['admin'],
                 'is_read'       => false,
             ]);
 

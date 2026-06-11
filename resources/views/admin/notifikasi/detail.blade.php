@@ -1,4 +1,4 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Detail Permintaan')
 

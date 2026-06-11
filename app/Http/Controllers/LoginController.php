@@ -12,7 +12,11 @@ class LoginController extends Controller
     {
         // Kalau sudah login, langsung ke dashboard masing-masing
         if (Auth::check()) {
-            return redirect()->route(Auth::user()->role . '.dashboard');
+            return match (Auth::user()->role) {
+                'admin'    => redirect()->route('admin.dashboard'),
+                'comodity' => redirect()->route('comodity.dashboard'),
+                default    => abort(403),
+            };
         }
         return view('auth.login');
     }
@@ -37,7 +41,6 @@ class LoginController extends Controller
             return match ($user->role) {
                 'admin'       => redirect()->route('admin.dashboard'),
                 'comodity'    => redirect()->route('comodity.dashboard'),
-                'improvement' => redirect()->route('improvement.dashboard'),
                 default       => redirect()->route('login'),
             };
         }

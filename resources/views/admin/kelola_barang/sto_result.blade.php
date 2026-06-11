@@ -1,5 +1,5 @@
 {{-- resources/views/improvement/kelola_barang/sto_result.blade.php --}}
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Hasil STO')
 @section('subtitle', 'Review selisih sebelum konfirmasi')
@@ -14,7 +14,7 @@
     $notScanned   = $totalBarang - $totalScanned;
 @endphp
 
-<form action="{{ route('improvement.kelola_barang.sto.confirm') }}" method="POST">
+<form action="{{ route('admin.kelola_barang.sto.confirm') }}" method="POST">
     @csrf
     <div class="space-y-6">
 
@@ -156,7 +156,7 @@
             </div>
 
             <div class="px-8 py-6 border-t border-gray-100 flex items-center justify-between">
-                <a href="{{ route('improvement.kelola_barang.sto') }}"
+                <a href="{{ route('admin.kelola_barang.sto') }}"
                     class="text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-all flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

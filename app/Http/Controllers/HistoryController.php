@@ -8,6 +8,8 @@ use App\Models\RiwayatMove;
 use App\Models\RiwayatIn;
 use App\Models\RiwayatSto;
 use Illuminate\Http\Request;
+use App\Models\Permintaan;
+use App\Models\PermintaanDetail;
 
 class HistoryController extends Controller
 {
@@ -21,7 +23,7 @@ class HistoryController extends Controller
             'totalSto'    => RiwayatSto::count(),
         ];
 
-        return view('improvement.history.index', $data);
+        return view('admin.history.index', $data);
     }
 
     public function inIndex(Request $request)
@@ -38,7 +40,7 @@ class HistoryController extends Controller
         }
 
         $data = $query->latest()->get();
-        return view('improvement.history.history_in', compact('data'));
+        return view('admin.history.history_in', compact('data'));
     }
 
 
@@ -51,19 +53,19 @@ class HistoryController extends Controller
         if ($request->filled('bulan')) {
             [$year, $month] = explode('-', $request->bulan);
             $query->whereYear('tanggal', $year)
-                  ->whereMonth('tanggal', $month);
+                ->whereMonth('tanggal', $month);
         }
 
         $riwayat     = $query->paginate(10)->appends($request->only('bulan'));
         $filterBulan = $request->bulan;
 
-        return view('improvement.history.history_sto', compact('riwayat', 'filterBulan'));
+        return view('admin.history.history_sto', compact('riwayat', 'filterBulan'));
     }
 
     public function stoDetail($id)
     {
         $sto = RiwayatSto::with('details.barang')->findOrFail($id);
-        return view('improvement.history.history_sto_detail', compact('sto'));
+        return view('admin.history.history_sto_detail', compact('sto'));
     }
 
     public function exportIn(Request $request)
@@ -109,7 +111,7 @@ class HistoryController extends Controller
         }
 
         $data = $query->latest()->get();
-        return view('improvement.history.history_out', compact('data'));
+        return view('admin.history.history_out', compact('data'));
     }
 
     public function exportOut(Request $request)
@@ -154,7 +156,7 @@ class HistoryController extends Controller
         }
 
         $data = $query->latest()->get();
-        return view('improvement.history.history_move', compact('data'));
+        return view('admin.history.history_move', compact('data'));
     }
 
     public function exportMove(Request $request)
@@ -185,5 +187,28 @@ class HistoryController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function historyPermintaan(Request $request)
+    {
+        $query = Permintaan::with('details.barang')->latest();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('pic', 'like', '%' . $request->search . '%')
+                    ->orWhere('commodity', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('tanggal', [
+                $request->start_date,
+                $request->end_date,
+            ]);
+        }
+
+        $permintaans = $query->paginate(10)->withQueryString();
+
+        return view('admin.history.history_permintaan', compact('permintaans'));
     }
 }

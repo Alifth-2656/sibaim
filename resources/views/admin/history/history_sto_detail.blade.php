@@ -1,4 +1,4 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Detail STO')
 @section('subtitle', 'Detail Stock Take Over')
@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-6">
 
-    <a href="{{ route('improvement.history.sto.index') }}"
+    <a href="{{ route('admin.history.sto.index') }}"
         class="inline-flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-all">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>

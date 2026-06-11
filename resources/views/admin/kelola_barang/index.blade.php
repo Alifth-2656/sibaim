@@ -1,4 +1,4 @@
-@extends('layouts.improvement')
+@extends('layouts.admin')
 
 @section('title', 'Kelola Barang')
 @section('subtitle', 'Manajemen operasional barang & gudang')
@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
 
         <!-- TAMBAH BARANG -->
-        <a href="{{ route('improvement.kelola_barang.create') }}"
+        <a href="{{ route('admin.kelola_barang.create') }}"
             class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 transition-all duration-300 group">
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-[#1E4D9C] group-hover:text-white transition-all duration-300">
@@ -26,7 +26,7 @@
         </a>
 
         <!-- TAMBAH STOCK -->
-        <a href="{{ route('improvement.kelola_barang.stok') }}"
+        <a href="{{ route('admin.kelola_barang.stok') }}"
             class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-teal-100/50 hover:-translate-y-1 transition-all duration-300 group">
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 group-hover:bg-[#5EEAD4] group-hover:text-[#1E4D9C] transition-all duration-300">
@@ -42,7 +42,7 @@
         </a>
 
         <!-- PINDAH RAK -->
-        <a href="{{ route('improvement.kelola_barang.pindah') }}"
+        <a href="{{ route('admin.kelola_barang.pindah') }}"
             class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-yellow-100/50 hover:-translate-y-1 transition-all duration-300 group">
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 group-hover:bg-yellow-400 group-hover:text-white transition-all duration-300">
@@ -59,7 +59,7 @@
         </a>
 
         <!-- BARANG KELUAR -->
-        <a href="{{ route('improvement.kelola_barang.keluar') }}"
+        <a href="{{ route('admin.kelola_barang.keluar') }}"
             class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-red-100/50 hover:-translate-y-1 transition-all duration-300 group">
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
@@ -75,7 +75,7 @@
         </a>
 
         <!-- STO — sekarang masuk grid -->
-        <a href="{{ route('improvement.kelola_barang.sto') }}"
+        <a href="{{ route('admin.kelola_barang.sto') }}"
             class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-purple-100/50 hover:-translate-y-1 transition-all duration-300 group">
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
@@ -98,7 +98,7 @@
         <div class="lg:col-span-2 bg-white rounded-[2rem] border border-gray-100 p-8">
             <div class="flex items-center justify-between mb-6">
                 <h4 class="font-black text-gray-800 uppercase tracking-widest text-xs">Aktivitas Terakhir</h4>
-                <a href="{{ route('improvement.history.index') }}" class="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline">Lihat Semua</a>
+                <a href="{{ route('admin.history.index') }}" class="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline">Lihat Semua</a>
             </div>
             <div class="space-y-3">
                 @forelse($aktivitas as $item)
@@ -180,7 +180,7 @@
                 <h4 class="font-black text-gray-800 uppercase tracking-widest text-sm">Barang Dibawah Minimum</h4>
                 <p class="text-[10px] text-red-400 font-black uppercase tracking-widest mt-1">⚠ Perlu restock segera</p>
             </div>
-            <a href="{{ route('improvement.inventory.index') }}" class="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline">Lihat Semua</a>
+            <a href="{{ route('admin.inventory.index') }}" class="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline">Lihat Semua</a>
         </div>
 
         <div class="overflow-x-auto">

@@ -94,33 +94,6 @@
                     Masuk
                 </button>
             </form>
-
-            <!-- Quick Login Section -->
-            <!-- Quick Login Section -->
-            <div class="mt-8">
-                <div class="relative flex items-center mb-4">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="mx-3 text-xs text-gray-400 font-medium tracking-wide">Demo Login Cepat</span>
-                    <div class="flex-grow border-t border-gray-200"></div>
-                </div>
-                <div class="flex justify-center gap-3">
-                    <button type="button"
-                        onclick="quickLogin('comodity', '123')"
-                        class="flex-1 py-2.5 bg-gradient-to-r from-blue-500 to-blue-400 text-white text-xs font-semibold rounded-xl shadow hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200">
-                        comodity
-                    </button>
-                    <button type="button"
-                        onclick="quickLogin('improvement', '123')"
-                        class="flex-1 py-2.5 bg-gradient-to-r from-orange-600 to-yellow-500 text-white text-xs font-semibold rounded-xl shadow hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200">
-                        improvement
-                    </button>
-                    <button type="button"
-                        onclick="quickLogin('admin', '123')"
-                        class="flex-1 py-2.5 bg-gradient-to-r from-purple-500 to-purple-400 text-white text-xs font-semibold rounded-xl shadow hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200">
-                        admin
-                    </button>
-                </div>
-            </div>
         </div>
 
 
@@ -136,12 +109,6 @@
             const input = document.getElementById('password');
             input.type = input.type === 'password' ? 'text' : 'password';
 
-        }
-
-        function quickLogin(username, password) {
-            document.querySelector('input[name="username"]').value = username;
-            document.querySelector('input[name="password"]').value = password;
-            document.querySelector('form').submit();
         }
     </script>
 
