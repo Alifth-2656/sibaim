@@ -57,11 +57,15 @@
                     <!-- MANUAL MODE -->
                     <div id="manual-area" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <div class="md:col-span-6">
-                            <select id="itemSelector" class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#5EEAD4] outline-none transition-all font-bold text-sm shadow-sm cursor-pointer appearance-none">
-                                <option value="">-- Pilih Barang --</option>
+                            <select id="itemSelector"
+                                class="w-full bg-white border border-gray-100 rounded-2xl font-bold text-sm shadow-sm">
+                                <option value="">-- Cari Barang --</option>
                                 @foreach($barangs as $item)
-                                <option value="{{ $item->id }}" data-nama="{{ $item->nama_barang }}" data-kode="{{ $item->kode_barang }}" data-stok="{{ $item->qty }}">
-                                    {{ $item->kode_barang }} | {{ $item->nama_barang }} ({{ $item->qty }})
+                                <option value="{{ $item->id }}"
+                                    data-nama="{{ $item->nama_barang }}"
+                                    data-kode="{{ $item->kode_barang }}"
+                                    data-alamat="{{ $item->alamat ?? 'N/A' }}">
+                                    {{ $item->kode_barang }} | {{ $item->nama_barang }}
                                 </option>
                                 @endforeach
                             </select>
@@ -422,5 +426,12 @@
     function updateCounter() {
         document.getElementById('itemCounter').innerText = itemCount + ' Items'; // ← ID yang benar
     }
+
+    // Tom Select untuk barang keluar
+    const tsKeluar = new TomSelect('#itemSelector', {
+        placeholder: 'Cari kode / nama barang...',
+        searchField: ['text'],
+        maxOptions: 50,
+    });
 </script>
 @endsection

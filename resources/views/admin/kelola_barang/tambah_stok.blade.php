@@ -65,10 +65,14 @@
                     <!-- MANUAL MODE -->
                     <div id="manualSection" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <div class="md:col-span-6">
-                            <select id="itemSelector" class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#5EEAD4] outline-none transition-all font-bold text-sm shadow-sm cursor-pointer appearance-none">
-                                <option value="">-- Pilih Barang --</option>
+                            <select id="itemSelector"
+                                class="w-full bg-white border border-gray-100 rounded-2xl font-bold text-sm shadow-sm">
+                                <option value="">-- Cari Barang --</option>
                                 @foreach($barangs as $item)
-                                <option value="{{ $item->id }}" data-nama="{{ $item->nama_barang }}" data-kode="{{ $item->kode_barang }}" data-stok="{{ $item->qty }}">
+                                <option value="{{ $item->id }}"
+                                    data-nama="{{ $item->nama_barang }}"
+                                    data-kode="{{ $item->kode_barang }}"
+                                    data-alamat="{{ $item->alamat ?? 'N/A' }}">
                                     {{ $item->kode_barang }} | {{ $item->nama_barang }}
                                 </option>
                                 @endforeach
@@ -241,7 +245,7 @@
             const kode = this.value.trim();
             if (kode) {
                 processScanCode(kode);
-    
+
             }
         }
     });
@@ -430,5 +434,16 @@
     function updateCounter() {
         document.getElementById('itemCount').innerText = itemCount + ' Items';
     }
+
+    // Tom Select untuk tambah stok
+    const tsStok = new TomSelect('#itemSelector', {
+        placeholder: 'Cari kode / nama barang...',
+        searchField: ['text'],
+        maxOptions: 50,
+        onChange(value) {
+            // biar fungsi addToTable() bisa baca value-nya
+            document.getElementById('itemSelector').value = value;
+        }
+    });
 </script>
 @endsection

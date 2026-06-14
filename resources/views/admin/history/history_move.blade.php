@@ -57,7 +57,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($data as $item)
                     <tr class="hover:bg-indigo-50/50 transition duration-150">
-                        <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ $loop->iteration }}</td>
+                        <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ $data->firstItem() + $loop->index }}</td>
                         <td class="px-6 py-5 text-sm text-gray-800 font-bold">{{ $item->barang->nama_barang ?? 'N/A' }}</td>
                         <td class="px-6 py-5 text-sm font-bold text-gray-600">{{ $item->from }}</td>
                         <td class="px-6 py-5 text-sm font-bold text-indigo-600">{{ $item->to }}</td>
@@ -72,6 +72,50 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- PAGINATION --}}
+        @if($data->hasPages())
+        <div class="mt-6 flex items-center justify-between px-2">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Menampilkan {{ $data->firstItem() }}–{{ $data->lastItem() }} dari {{ $data->total() }} data
+            </p>
+            <div class="flex items-center gap-1">
+                @if($data->onFirstPage())
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
+                @else
+                    <a href="{{ $data->previousPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
+                @endif
+
+                @php
+                    $current = $data->currentPage();
+                    $last    = $data->lastPage();
+                    $pages   = [1];
+                    for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) $pages[] = $i;
+                    if ($last > 1) $pages[] = $last;
+                    $pages = array_unique($pages); sort($pages);
+                @endphp
+
+                @php $prev = null; @endphp
+                @foreach($pages as $page)
+                    @if($prev !== null && $page - $prev > 1)
+                        <span class="px-1 text-gray-300 font-black text-sm">…</span>
+                    @endif
+                    <a href="{{ $data->url($page) }}"
+                        class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
+                        {{ $page }}
+                    </a>
+                    @php $prev = $page; @endphp
+                @endforeach
+
+                @if($data->hasMorePages())
+                    <a href="{{ $data->nextPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
+                @else
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>
+                @endif
+            </div>
+        </div>
+        @endif
+
     </div>
 </div>
 @endsection

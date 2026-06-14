@@ -101,19 +101,46 @@
             </table>
         </div>
 
+        {{-- PAGINATION --}}
         @if($riwayat->hasPages())
         <div class="px-8 py-6 border-t border-gray-100 flex items-center justify-between">
-            @if($riwayat->onFirstPage())
-                <span class="text-[10px] font-black text-gray-200 uppercase tracking-widest">← Prev</span>
-            @else
-                <a href="{{ $riwayat->previousPageUrl() }}" class="text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
-            @endif
-            <span class="text-[10px] font-bold text-gray-400">{{ $riwayat->currentPage() }} / {{ $riwayat->lastPage() }}</span>
-            @if($riwayat->hasMorePages())
-                <a href="{{ $riwayat->nextPageUrl() }}" class="text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
-            @else
-                <span class="text-[10px] font-black text-gray-200 uppercase tracking-widest">Next →</span>
-            @endif
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Menampilkan {{ $riwayat->firstItem() }}–{{ $riwayat->lastItem() }} dari {{ $riwayat->total() }} STO
+            </p>
+            <div class="flex items-center gap-1">
+                @if($riwayat->onFirstPage())
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
+                @else
+                    <a href="{{ $riwayat->previousPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
+                @endif
+
+                @php
+                    $current = $riwayat->currentPage();
+                    $last    = $riwayat->lastPage();
+                    $pages   = [1];
+                    for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) $pages[] = $i;
+                    if ($last > 1) $pages[] = $last;
+                    $pages = array_unique($pages); sort($pages);
+                @endphp
+
+                @php $prev = null; @endphp
+                @foreach($pages as $page)
+                    @if($prev !== null && $page - $prev > 1)
+                        <span class="px-1 text-gray-300 font-black text-sm">…</span>
+                    @endif
+                    <a href="{{ $riwayat->url($page) }}"
+                        class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
+                        {{ $page }}
+                    </a>
+                    @php $prev = $page; @endphp
+                @endforeach
+
+                @if($riwayat->hasMorePages())
+                    <a href="{{ $riwayat->nextPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
+                @else
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>
+                @endif
+            </div>
         </div>
         @endif
     </div>

@@ -19,7 +19,6 @@ class KelolaBarangController extends Controller
     // ================= INDEX =================
     public function index(Request $request)
     {
-        // Aktivitas
         $aktivitasIn = RiwayatIn::with('barang')->latest()->get()
             ->map(fn($r) => [
                 'tipe'       => 'in',
@@ -44,10 +43,9 @@ class KelolaBarangController extends Controller
             ->sortByDesc('created_at')
             ->values();
 
-        // Manual paginate aktivitas — 5 per halaman
-        $aktivitasPage = (int) $request->get('aktivitas_page', 1);
+        $aktivitasPage    = (int) $request->get('aktivitas_page', 1);
         $aktivitasPerPage = 5;
-        $aktivitas = new \Illuminate\Pagination\LengthAwarePaginator(
+        $aktivitas        = new \Illuminate\Pagination\LengthAwarePaginator(
             $allAktivitas->forPage($aktivitasPage, $aktivitasPerPage),
             $allAktivitas->count(),
             $aktivitasPerPage,
@@ -55,7 +53,6 @@ class KelolaBarangController extends Controller
             ['path' => $request->url(), 'pageName' => 'aktivitas_page']
         );
 
-        // Low stocks paginate — 5 per halaman
         $lowStocks = Barang::whereColumn('qty', '<=', 'min')
             ->orderBy('qty')
             ->paginate(5, ['*'], 'low_page');
@@ -99,7 +96,6 @@ class KelolaBarangController extends Controller
                 'image'       => $imagePath
             ]);
 
-            // Simpan ke RiwayatIn via Model
             if ($request->qty && $request->qty > 0) {
                 RiwayatIn::create([
                     'barang_id'  => $barang->id,
@@ -109,7 +105,7 @@ class KelolaBarangController extends Controller
                 ]);
             }
 
-            return redirect()->route('admin.kelola_barang.index')
+            return redirect()->route('admin.dashboard')
                 ->with('success', 'Barang berhasil ditambahkan');
         });
     }
@@ -134,7 +130,6 @@ class KelolaBarangController extends Controller
                     $barang = Barang::findOrFail($barang_id);
                     $barang->increment('qty', $qty);
 
-                    // Pake Model RiwayatIn
                     RiwayatIn::create([
                         'barang_id'  => $barang->id,
                         'qty'        => $qty,
@@ -144,7 +139,7 @@ class KelolaBarangController extends Controller
                 }
             });
 
-            return redirect()->route('admin.kelola_barang.index')
+            return redirect()->route('admin.dashboard')
                 ->with('success', 'Semua stok berhasil diperbarui dan tercatat di riwayat.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -170,7 +165,6 @@ class KelolaBarangController extends Controller
                 foreach ($request->items as $barang_id => $data) {
                     $barang = Barang::findOrFail($barang_id);
 
-                    // Pake Model RiwayatMove
                     RiwayatMove::create([
                         'barang_id' => $barang->id,
                         'from'      => $data['from'],
@@ -182,7 +176,7 @@ class KelolaBarangController extends Controller
                 }
             });
 
-            return redirect()->route('admin.kelola_barang.index')
+            return redirect()->route('admin.dashboard')
                 ->with('success', 'Lokasi rak berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memindahkan rak: ' . $e->getMessage());
@@ -205,7 +199,7 @@ class KelolaBarangController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                foreach ($request->items as $barang_id => $qty) {  // ← ubah ke key => value
+                foreach ($request->items as $barang_id => $qty) {
                     $barang = Barang::findOrFail($barang_id);
 
                     if ($barang->qty < $qty) {
@@ -223,31 +217,29 @@ class KelolaBarangController extends Controller
                 }
             });
 
-            return redirect()->route('admin.kelola_barang.index')
+            return redirect()->route('admin.dashboard')
                 ->with('success', 'Transaksi barang keluar berhasil diproses.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses barang keluar: ' . $e->getMessage());
         }
-    }   
+    }
 
+    // ================= STO =================
     public function sto()
     {
         $barangs  = Barang::orderBy('kode_barang')->get();
         $stoDraft = StoDraft::where('user_id', Auth::id())->first();
-
-        // prefill = raw items dari STO sebelumnya (untuk "Ulangi STO")
-        $prefill = $stoDraft ? ($stoDraft->items ?? []) : [];
+        $prefill  = $stoDraft ? ($stoDraft->items ?? []) : [];
 
         return view('admin.kelola_barang.sto', compact('barangs', 'stoDraft', 'prefill'));
     }
+
     public function checkSto(Request $request)
     {
         $request->validate([
             'pic'   => 'required|string|max:100',
             'items' => 'required|array',
         ]);
-
-        // ← hapus seluruh blok cek $stoBulanIni
 
         $results = [];
 
@@ -274,13 +266,13 @@ class KelolaBarangController extends Controller
             [
                 'pic'     => $request->pic,
                 'results' => $results,
-                'items'   => $request->items, // ← tambah ini untuk prefill
+                'items'   => $request->items,
             ]
         );
 
         return view('admin.kelola_barang.sto_result', [
-            'pic'     => $request->pic,
-            'results' => $results,
+            'pic'         => $request->pic,
+            'results'     => $results,
             'totalBarang' => Barang::count(),
         ]);
     }
@@ -288,7 +280,7 @@ class KelolaBarangController extends Controller
     public function discardStoDraft()
     {
         StoDraft::where('user_id', Auth::id())->delete();
-        return redirect()->route('admin.kelola_barang.sto')
+        return redirect()->route('admin.dashboard')
             ->with('success', 'Draft STO dihapus. Silakan mulai STO baru.');
     }
 
@@ -305,12 +297,10 @@ class KelolaBarangController extends Controller
 
         try {
             $results      = $draft->results;
-            $adjustItems  = $request->input('adjust', []); // array barang_id yang di-adjust
-
+            $adjustItems  = $request->input('adjust', []);
             $totalMatch   = collect($results)->where('status', 'match')->count();
             $totalSelisih = collect($results)->where('status', '!=', 'match')->count();
 
-            // Simpan header STO
             $sto = RiwayatSto::create([
                 'pic'           => $draft->pic,
                 'tanggal'       => now()->toDateString(),
@@ -322,7 +312,6 @@ class KelolaBarangController extends Controller
             foreach ($results as $item) {
                 $isAdjusted = in_array($item['barang_id'], array_map('intval', $adjustItems));
 
-                // Simpan detail
                 RiwayatStoDetail::create([
                     'riwayat_sto_id' => $sto->id,
                     'barang_id'      => $item['barang_id'],
@@ -332,7 +321,6 @@ class KelolaBarangController extends Controller
                     'is_adjusted'    => $isAdjusted,
                 ]);
 
-                // Adjust qty jika user centang
                 if ($isAdjusted) {
                     Barang::where('id', $item['barang_id'])
                         ->update(['qty' => $item['qty_fisik']]);
@@ -342,7 +330,7 @@ class KelolaBarangController extends Controller
             DB::commit();
             $draft->delete();
 
-            return redirect()->route('admin.kelola_barang.index')
+            return redirect()->route('admin.dashboard')
                 ->with('success', 'STO berhasil disimpan. ' . count($adjustItems) . ' item di-adjust.');
         } catch (\Exception $e) {
             DB::rollBack();

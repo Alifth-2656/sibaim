@@ -121,9 +121,8 @@
                     {{-- MANUAL MODE --}}
                     <div id="manualSection" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <div class="md:col-span-6">
-                            <select id="itemSelector"
-                                class="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#5EEAD4] outline-none transition-all font-bold text-sm shadow-sm cursor-pointer">
-                                <option value="">-- Pilih Barang --</option>
+                            <select id="itemSelector">
+                                <option value="">-- Cari Barang --</option>
                                 @foreach($barangs as $item)
                                 <option value="{{ $item->id }}"
                                     data-nama="{{ $item->nama_barang }}"
@@ -141,7 +140,7 @@
                                 placeholder="Qty Fisik">
                         </div>
                         <div class="md:col-span-3">
-                            <button type="button" onclick="addItem('manual')"
+                            <button type="button" onclick="addItem()"
                                 class="w-full h-full bg-[#1E4D9C] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#5EEAD4] hover:text-[#1E4D9C] transition-all shadow-lg flex items-center justify-center gap-2 py-4">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
@@ -171,11 +170,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8H3m2 8H3m18-8h-1M4 4l16 16" />
                                     </svg>
                                 </div>
-                                <input
-                                    type="text"
-                                    id="scannerInput"
-                                    autocomplete="off"
-                                    spellcheck="false"
+                                <input type="text" id="scannerInput" autocomplete="off" spellcheck="false"
                                     class="w-full pl-14 pr-5 py-5 bg-white border-2 border-dashed border-gray-200 rounded-2xl font-mono font-black text-gray-700 text-sm focus:outline-none focus:border-[#5EEAD4] transition-all duration-300 placeholder:font-normal placeholder:text-gray-300 placeholder:font-sans"
                                     placeholder="Fokuskan kursor di sini, lalu scan barcode...">
                             </div>
@@ -296,7 +291,14 @@
     let stoItems = {};
     const TOTAL_BARANG = {{ $barangs->count() }};
 
-    // ─── PREFILL DARI ULANGI STO ─────────────────────
+    // ─── INIT TOM SELECT ─────────────────────────────────────
+    const tsSto = new TomSelect('#itemSelector', {
+        placeholder: 'Cari kode / nama barang...',
+        searchField: ['text'],
+        maxOptions: 50,
+    });
+
+    // ─── PREFILL DARI ULANGI STO ─────────────────────────────
     const prefillData = @json($prefill ?? []);
 
     if (Object.keys(prefillData).length > 0) {
@@ -321,6 +323,8 @@
                 parseInt(qtyFisik)
             );
         }
+
+        tsSto.clear();
     }
 
     // ─── MODE TOGGLE ─────────────────────────────────────────
@@ -344,18 +348,13 @@
             btnS.classList.remove('text-gray-400');
             btnM.classList.remove('bg-white', 'text-[#1E4D9C]', 'shadow-sm');
             btnM.classList.add('text-gray-400');
-
-            setTimeout(() => {
-                document.getElementById('scannerInput').focus();
-            }, 100);
+            setTimeout(() => document.getElementById('scannerInput').focus(), 100);
         }
     }
 
     // ─── SCANNER PHYSICAL ────────────────────────────────────
     const scannerInput = document.getElementById('scannerInput');
     let lastKeyTime = 0;
-    let keyBuffer = '';
-    let keyTimer = null;
     let isConnected = false;
     let disconnectTimer = null;
 
@@ -364,10 +363,8 @@
         const gap = now - lastKeyTime;
         lastKeyTime = now;
 
-        if (e.key !== 'Enter' && e.key.length === 1) {
-            if (gap < 50) {
-                setConnected(true);
-            }
+        if (e.key !== 'Enter' && e.key.length === 1 && gap < 50) {
+            setConnected(true);
         }
 
         if (e.key === 'Enter') {
@@ -381,9 +378,7 @@
     });
 
     scannerInput.addEventListener('blur', function() {
-        disconnectTimer = setTimeout(() => {
-            setConnected(false);
-        }, 300);
+        disconnectTimer = setTimeout(() => setConnected(false), 300);
     });
 
     scannerInput.addEventListener('focus', function() {
@@ -392,7 +387,6 @@
 
     function setConnected(status) {
         isConnected = status;
-
         const badge = document.getElementById('scannerStatusBadge');
         const dot = document.getElementById('scannerStatusDot');
         const text = document.getElementById('scannerStatusText');
@@ -404,7 +398,6 @@
             text.className = 'text-[10px] font-black uppercase tracking-widest text-green-600';
             text.innerText = 'Connected';
             icon.className = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
-
             clearTimeout(disconnectTimer);
             disconnectTimer = setTimeout(() => setConnected(false), 3000);
         } else {
@@ -484,7 +477,6 @@
         );
 
         document.getElementById('scanResult').classList.add('hidden');
-
         setTimeout(() => {
             scannerInput.value = '';
             scannerInput.focus();
@@ -497,7 +489,6 @@
         setTimeout(() => scannerInput.focus(), 100);
     }
 
-    // Enter di qty input = langsung confirm
     document.getElementById('scanQtyFisik').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -507,10 +498,10 @@
 
     // ─── MANUAL ADD ──────────────────────────────────────────
     function addItem() {
-        const selector = document.getElementById('itemSelector');
         const qtyInput = document.getElementById('inputQtyFisik');
+        const selectedId = tsSto.getValue();
 
-        if (!selector.value) {
+        if (!selectedId) {
             alert('Pilih barang terlebih dahulu!');
             return;
         }
@@ -521,7 +512,9 @@
             return;
         }
 
-        const opt = selector.options[selector.selectedIndex];
+        const selector = document.getElementById('itemSelector');
+        const opt = selector.querySelector(`option[value="${selectedId}"]`);
+
         addToTable(
             String(opt.value),
             opt.getAttribute('data-nama'),
@@ -531,7 +524,7 @@
             qtyFisik
         );
 
-        selector.value = '';
+        tsSto.clear();
         qtyInput.value = 0;
     }
 
@@ -544,13 +537,7 @@
             stoItems[id].qtyFisik = qtyFisik;
             updateRow(id);
         } else {
-            stoItems[id] = {
-                nama,
-                kode,
-                satuan,
-                qtySistem,
-                qtyFisik
-            };
+            stoItems[id] = { nama, kode, satuan, qtySistem, qtyFisik };
             renderRow(id);
             updateCounter();
         }

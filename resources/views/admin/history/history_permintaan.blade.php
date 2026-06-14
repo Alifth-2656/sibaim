@@ -153,23 +153,42 @@
 
         {{-- PAGINATION --}}
         @if($permintaans->hasPages())
-        <div class="mt-6 flex items-center justify-between">
+        <div class="mt-6 flex items-center justify-between px-2">
             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                {{ $permintaans->firstItem() }}–{{ $permintaans->lastItem() }} dari {{ $permintaans->total() }}
+                Menampilkan {{ $permintaans->firstItem() }}–{{ $permintaans->lastItem() }} dari {{ $permintaans->total() }} permintaan
             </p>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
                 @if($permintaans->onFirstPage())
-                <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">← Prev</span>
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
                 @else
-                <a href="{{ $permintaans->previousPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-emerald-500 transition-all">← Prev</a>
+                    <a href="{{ $permintaans->previousPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
                 @endif
-                @foreach($permintaans->getUrlRange(1, $permintaans->lastPage()) as $page => $url)
-                <a href="{{ $url }}" class="w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all {{ $page == $permintaans->currentPage() ? 'bg-[#1E4D9C] text-white' : 'text-gray-400 hover:bg-gray-100' }}">{{ $page }}</a>
+
+                @php
+                    $current = $permintaans->currentPage();
+                    $last    = $permintaans->lastPage();
+                    $pages   = [1];
+                    for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) $pages[] = $i;
+                    if ($last > 1) $pages[] = $last;
+                    $pages = array_unique($pages); sort($pages);
+                @endphp
+
+                @php $prev = null; @endphp
+                @foreach($pages as $page)
+                    @if($prev !== null && $page - $prev > 1)
+                        <span class="px-1 text-gray-300 font-black text-sm">…</span>
+                    @endif
+                    <a href="{{ $permintaans->url($page) }}"
+                        class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
+                        {{ $page }}
+                    </a>
+                    @php $prev = $page; @endphp
                 @endforeach
+
                 @if($permintaans->hasMorePages())
-                <a href="{{ $permintaans->nextPageUrl() }}" class="px-3 py-1.5 text-[10px] font-black text-[#1E4D9C] hover:text-emerald-500 transition-all">Next →</a>
+                    <a href="{{ $permintaans->nextPageUrl() }}" class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
                 @else
-                <span class="px-3 py-1.5 text-[10px] font-black text-gray-300 cursor-not-allowed">Next →</span>
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>
                 @endif
             </div>
         </div>

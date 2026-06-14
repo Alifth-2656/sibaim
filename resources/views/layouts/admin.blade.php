@@ -11,6 +11,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <style>
         body {
@@ -24,6 +26,77 @@
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        /* ── TOM SELECT OVERRIDE ── */
+        .ts-wrapper {
+            width: 100%;
+        }
+
+        .ts-control {
+            padding: 1rem 1.25rem !important;
+            background-color: #fff !important;
+            border: 1px solid #f3f4f6 !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+            font-weight: 700 !important;
+            font-size: 0.875rem !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            cursor: pointer !important;
+            outline: none !important;
+            transition: all 0.15s !important;
+            min-height: unset !important;
+        }
+
+        .ts-wrapper.focus .ts-control {
+            border-color: transparent !important;
+            box-shadow: 0 0 0 2px #5EEAD4 !important;
+        }
+
+        .ts-control input {
+            font-weight: 700 !important;
+            font-size: 0.875rem !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            color: #374151 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .ts-control input::placeholder {
+            color: #d1d5db !important;
+            font-weight: 400 !important;
+        }
+
+        .ts-dropdown {
+            border: 1px solid #f3f4f6 !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 4px 24px 0 rgb(0 0 0 / 0.07) !important;
+            font-size: 0.875rem !important;
+            font-weight: 700 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            overflow: hidden !important;
+            margin-top: 4px !important;
+        }
+
+        .ts-dropdown .option {
+            padding: 0.75rem 1.25rem !important;
+            color: #374151 !important;
+            cursor: pointer !important;
+        }
+
+        .ts-dropdown .option:hover,
+        .ts-dropdown .option.active {
+            background-color: #f0fdfb !important;
+            color: #1E4D9C !important;
+        }
+
+        .ts-dropdown .option.selected {
+            background-color: #5EEAD4 !important;
+            color: #1E4D9C !important;
+        }
+
+        .ts-wrapper.single .ts-control::after {
+            display: none !important;
         }
     </style>
 

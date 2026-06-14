@@ -28,10 +28,8 @@ class HistoryController extends Controller
 
     public function inIndex(Request $request)
     {
-        // Mulai query
-        $query = \App\Models\RiwayatIn::with('barang');
+        $query = RiwayatIn::with('barang');
 
-        // Cek apakah ada filter tanggal
         if ($request->filled(['start_date', 'end_date'])) {
             $query->whereBetween('created_at', [
                 $request->start_date . ' 00:00:00',
@@ -39,24 +37,51 @@ class HistoryController extends Controller
             ]);
         }
 
-        $data = $query->latest()->get();
+        $data = $query->latest()->paginate(10)->withQueryString();
         return view('admin.history.history_in', compact('data'));
     }
 
+    public function outIndex(Request $request)
+    {
+        $query = RiwayatOut::with('barang');
 
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+
+        $data = $query->latest()->paginate(10)->withQueryString();
+        return view('admin.history.history_out', compact('data'));
+    }
+
+    public function moveIndex(Request $request)
+    {
+        $query = RiwayatMove::with('barang');
+
+        if ($request->filled(['start_date', 'end_date'])) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59'
+            ]);
+        }
+
+        $data = $query->latest()->paginate(10)->withQueryString();
+        return view('admin.history.history_move', compact('data'));
+    }
 
     public function stoIndex(Request $request)
     {
         $query = RiwayatSto::latest();
 
-        // Filter bulan: format "YYYY-MM"
         if ($request->filled('bulan')) {
             [$year, $month] = explode('-', $request->bulan);
             $query->whereYear('tanggal', $year)
-                ->whereMonth('tanggal', $month);
+                  ->whereMonth('tanggal', $month);
         }
 
-        $riwayat     = $query->paginate(10)->appends($request->only('bulan'));
+        $riwayat     = $query->paginate(10)->withQueryString();
         $filterBulan = $request->bulan;
 
         return view('admin.history.history_sto', compact('riwayat', 'filterBulan'));
@@ -72,71 +97,69 @@ class HistoryController extends Controller
     {
         $fileName = 'riwayat_masuk_' . date('Y-m-d') . '.csv';
 
-        // Gunakan logika filter yang sama dengan inIndex
-        $query = \App\Models\RiwayatIn::with('barang');
+        $query = RiwayatIn::with('barang');
         if ($request->filled(['start_date', 'end_date'])) {
             $query->whereBetween('created_at', [
                 $request->start_date . ' 00:00:00',
                 $request->end_date . ' 23:59:59'
             ]);
         }
-        $data = $query->get();
+        $data = $query->latest()->get();
 
         $headers = [
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$fileName",
         ];
 
         $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty']);
+            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty', 'Keterangan']);
             foreach ($data as $row) {
-                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty]);
+                fputcsv($file, [
+                    $row->created_at,
+                    $row->pic,
+                    $row->barcode,
+                    $row->barang->nama_barang ?? '-',
+                    $row->qty,
+                    $row->keterangan,
+                ]);
             }
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
-    }
-
-    public function outIndex(Request $request)
-    {
-        $query = \App\Models\RiwayatOut::with('barang');
-
-        if ($request->filled(['start_date', 'end_date'])) {
-            $query->whereBetween('created_at', [
-                $request->start_date . ' 00:00:00',
-                $request->end_date . ' 23:59:59'
-            ]);
-        }
-
-        $data = $query->latest()->get();
-        return view('admin.history.history_out', compact('data'));
     }
 
     public function exportOut(Request $request)
     {
         $fileName = 'riwayat_keluar_' . date('Y-m-d') . '.csv';
 
-        $query = \App\Models\RiwayatOut::with('barang');
+        $query = RiwayatOut::with('barang');
         if ($request->filled(['start_date', 'end_date'])) {
             $query->whereBetween('created_at', [
                 $request->start_date . ' 00:00:00',
                 $request->end_date . ' 23:59:59'
             ]);
         }
-        $data = $query->get();
+        $data = $query->latest()->get();
 
         $headers = [
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$fileName",
         ];
 
         $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty']);
+            fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty', 'Keterangan']);
             foreach ($data as $row) {
-                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty]);
+                fputcsv($file, [
+                    $row->created_at,
+                    $row->pic,
+                    $row->barcode,
+                    $row->barang->nama_barang ?? '-',
+                    $row->qty,
+                    $row->keterangan,
+                ]);
             }
             fclose($file);
         };
@@ -144,44 +167,37 @@ class HistoryController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function moveIndex(Request $request)
-    {
-        $query = \App\Models\RiwayatMove::with('barang');
-
-        if ($request->filled(['start_date', 'end_date'])) {
-            $query->whereBetween('created_at', [
-                $request->start_date . ' 00:00:00',
-                $request->end_date . ' 23:59:59'
-            ]);
-        }
-
-        $data = $query->latest()->get();
-        return view('admin.history.history_move', compact('data'));
-    }
-
     public function exportMove(Request $request)
     {
         $fileName = 'riwayat_pindah_' . date('Y-m-d') . '.csv';
 
-        $query = \App\Models\RiwayatMove::with('barang');
+        $query = RiwayatMove::with('barang');
         if ($request->filled(['start_date', 'end_date'])) {
             $query->whereBetween('created_at', [
                 $request->start_date . ' 00:00:00',
                 $request->end_date . ' 23:59:59'
             ]);
         }
-        $data = $query->get();
+        $data = $query->latest()->get();
 
         $headers = [
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$fileName",
         ];
 
         $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Tanggal', 'PIC', 'Barcode', 'Nama Barang', 'Qty', 'Dari', 'Ke']);
             foreach ($data as $row) {
-                fputcsv($file, [$row->created_at, $row->pic, $row->barcode, $row->barang->nama_barang ?? '-', $row->qty, $row->from, $row->to]);
+                fputcsv($file, [
+                    $row->created_at,
+                    $row->pic,
+                    $row->barcode,
+                    $row->barang->nama_barang ?? '-',
+                    $row->qty,
+                    $row->from,
+                    $row->to,
+                ]);
             }
             fclose($file);
         };
@@ -196,7 +212,7 @@ class HistoryController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('pic', 'like', '%' . $request->search . '%')
-                    ->orWhere('commodity', 'like', '%' . $request->search . '%');
+                  ->orWhere('commodity', 'like', '%' . $request->search . '%');
             });
         }
 
