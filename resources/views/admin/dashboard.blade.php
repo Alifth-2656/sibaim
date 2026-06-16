@@ -191,44 +191,97 @@
 
         </div>
 
-        {{-- STOK KOSONG --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+{{-- STOK KOSONG --}}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-            <div class="px-6 py-4 border-b border-gray-100">
-                <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">
-                    Barang Stok Kosong
-                </p>
-            </div>
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">
+            Barang Stok Kosong
+        </p>
+        <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+            {{ $stokKosong->total() }} item
+        </span>
+    </div>
 
-            <table class="w-full">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Barang</th>
-                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">Qty</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($stokKosong as $barang)
-                    <tr class="hover:bg-red-50 transition">
-                        <td class="px-4 py-3">
-                            <div class="font-semibold text-gray-700">{{ $barang->nama_barang }}</div>
-                            <div class="text-xs text-gray-400 mono">{{ $barang->kode_barang }}</div>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="mono font-bold text-red-500">{{ $barang->qty }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="2" class="py-10 text-center text-green-500 font-semibold">
-                            ✓ Tidak ada stok kosong
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <table class="w-full">
+        <thead>
+            <tr class="bg-gray-50">
+                <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Barang</th>
+                <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">Qty</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @forelse($stokKosong as $barang)
+            <tr class="hover:bg-red-50 transition">
+                <td class="px-4 py-3">
+                    <div class="font-semibold text-gray-700">{{ $barang->nama_barang }}</div>
+                    <div class="text-xs text-gray-400 mono">{{ $barang->kode_barang }}</div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <span class="mono font-bold text-red-500">{{ $barang->qty }}</span>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="2" class="py-10 text-center text-green-500 font-semibold">
+                    ✓ Tidak ada stok kosong
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 
+    {{-- Pagination --}}
+    @if($stokKosong->hasPages())
+    <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            {{ $stokKosong->firstItem() }}–{{ $stokKosong->lastItem() }} dari {{ $stokKosong->total() }}
+        </p>
+
+        <div class="flex items-center gap-1">
+            {{-- Prev --}}
+            @if($stokKosong->onFirstPage())
+                <span class="px-3 py-1 text-[10px] font-black text-gray-300 cursor-not-allowed">← Prev</span>
+            @else
+                <a href="{{ $stokKosong->previousPageUrl() }}"
+                    class="px-3 py-1 text-[10px] font-black text-[#1E4D9C] hover:text-blue-400 transition-all">← Prev</a>
+            @endif
+
+            {{-- Page numbers --}}
+            @php
+                $current = $stokKosong->currentPage();
+                $last    = $stokKosong->lastPage();
+                $pages   = [1];
+                for ($i = max(2, $current - 1); $i <= min($last - 1, $current + 1); $i++) { $pages[] = $i; }
+                if ($last > 1) $pages[] = $last;
+                $pages = array_unique($pages); sort($pages);
+                $prev = null;
+            @endphp
+
+            @foreach($pages as $page)
+                @if($prev !== null && $page - $prev > 1)
+                    <span class="text-gray-300 font-black text-xs">…</span>
+                @endif
+                <a href="{{ $stokKosong->url($page) }}"
+                    class="w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all
+                        {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow' : 'text-gray-400 hover:bg-gray-100' }}">
+                    {{ $page }}
+                </a>
+                @php $prev = $page; @endphp
+            @endforeach
+
+            {{-- Next --}}
+            @if($stokKosong->hasMorePages())
+                <a href="{{ $stokKosong->nextPageUrl() }}"
+                    class="px-3 py-1 text-[10px] font-black text-[#1E4D9C] hover:text-blue-400 transition-all">Next →</a>
+            @else
+                <span class="px-3 py-1 text-[10px] font-black text-gray-300 cursor-not-allowed">Next →</span>
+            @endif
         </div>
+    </div>
+    @endif
+
+</div>
 
     </div>
 

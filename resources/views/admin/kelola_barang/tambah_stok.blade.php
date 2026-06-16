@@ -175,6 +175,11 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- PAGINATION -->
+                        <div id="paginationWrapper" class="px-4 py-3 border-t border-gray-100 items-center justify-between hidden">
+                            <p id="paginationInfo" class="text-[10px] font-black text-gray-400 uppercase tracking-widest"></p>
+                            <div id="paginationControls" class="flex items-center gap-1"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -203,13 +208,17 @@
     let lastKeyTime = 0;
     let disconnectTimer = null;
 
-    // ─── MODE TOGGLE ─────────────────────────────────────
+    // ─── PAGINATION STATE ─────────────────────────────────
+    let allRows = [];
+    const PER_PAGE = 10;
+    let currentPage = 1;
+
+    // ─── MODE TOGGLE ─────────────────────────────────────────────
     function setMode(mode) {
         const manual = document.getElementById('manualSection');
         const scan = document.getElementById('scanSection');
         const btnManual = document.getElementById('btnManual');
         const btnScan = document.getElementById('btnScan');
-
         if (mode === 'manual') {
             manual.classList.remove('hidden');
             scan.classList.add('hidden');
@@ -235,26 +244,17 @@
         const now = Date.now();
         const gap = now - lastKeyTime;
         lastKeyTime = now;
-
-        if (e.key !== 'Enter' && e.key.length === 1 && gap < 50) {
-            setConnected(true);
-        }
-
+        if (e.key !== 'Enter' && e.key.length === 1 && gap < 50) setConnected(true);
         if (e.key === 'Enter') {
             e.preventDefault();
             const kode = this.value.trim();
-            if (kode) {
-                processScanCode(kode);
-
-            }
+            if (kode) processScanCode(kode);
         }
     });
-
-    scannerInput.addEventListener('blur', function() {
+    scannerInput.addEventListener('blur', () => {
         disconnectTimer = setTimeout(() => setConnected(false), 300);
     });
-
-    scannerInput.addEventListener('focus', function() {
+    scannerInput.addEventListener('focus', () => {
         clearTimeout(disconnectTimer);
     });
 
@@ -263,7 +263,6 @@
         const dot = document.getElementById('scannerStatusDot');
         const text = document.getElementById('scannerStatusText');
         const icon = document.getElementById('scannerIcon');
-
         if (status) {
             badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200 transition-all duration-500';
             dot.className = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
@@ -282,11 +281,11 @@
     }
 
     function speak(text) {
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'id-ID';
-        utter.rate = 1.1;
-        utter.volume = 1;
-        window.speechSynthesis.speak(utter);
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        u.rate = 1.1;
+        u.volume = 1;
+        window.speechSynthesis.speak(u);
     }
 
     function processScanCode(raw) {
@@ -320,20 +319,11 @@
         scannerInput.focus();
     }
 
-
     function confirmScan() {
         const qtyInput = document.getElementById('scanQty');
         const qty = parseInt(qtyInput.value);
         if (isNaN(qty) || qty < 1) return alert('Masukkan qty yang valid!');
-
-        processEntry(
-            qtyInput.dataset.barangId,
-            qty,
-            qtyInput.dataset.nama,
-            qtyInput.dataset.kode,
-            qtyInput.dataset.stok
-        );
-
+        processEntry(qtyInput.dataset.barangId, qty, qtyInput.dataset.nama, qtyInput.dataset.kode, qtyInput.dataset.stok);
         document.getElementById('scanResult').classList.add('hidden');
         setTimeout(() => {
             scannerInput.value = '';
@@ -358,54 +348,35 @@
     function addToTable() {
         const selector = document.getElementById('itemSelector');
         const qtyInput = document.getElementById('inputQty');
-
         if (!selector.value || !qtyInput.value || qtyInput.value < 1)
             return alert('Pilih barang & masukkan Qty!');
-
         const opt = selector.options[selector.selectedIndex];
-        processEntry(
-            selector.value,
-            parseInt(qtyInput.value),
-            opt.getAttribute('data-nama'),
-            opt.getAttribute('data-kode'),
-            opt.getAttribute('data-stok')
-        );
-
+        processEntry(selector.value, parseInt(qtyInput.value), opt.getAttribute('data-nama'), opt.getAttribute('data-kode'), opt.getAttribute('data-stok'));
         selector.value = '';
         qtyInput.value = 1;
     }
 
-    // ─── CORE TABLE ──────────────────────────────────────
+    // ─── CORE TABLE + PAGINATION ─────────────────────────
     function processEntry(id, qty, nama, kode, stokAwal) {
-        const tableBody = document.getElementById('stokTableBody');
-        const emptyRow = document.getElementById('emptyRow');
-        if (emptyRow) emptyRow.remove();
-
-        // BAGIAN 1 — update row yang sudah ada
-        const existingRow = document.querySelector(`tr[data-id="${id}"]`);
+        // Update qty jika sudah ada
+        const existingRow = allRows.find(r => r.getAttribute('data-id') === String(id));
         if (existingRow) {
-            const input = existingRow.querySelector('.qty-input'); // ← ubah ini
-            input.value = parseInt(input.value) + qty; // ← ubah ini
+            const input = existingRow.querySelector('.qty-input');
+            input.value = parseInt(input.value) + qty;
             return;
         }
 
         const row = document.createElement('tr');
         row.setAttribute('data-id', id);
         row.className = 'border-b border-gray-50 hover:bg-teal-50/20 transition-all';
-
-        // BAGIAN 2 — row baru, ganti innerHTML-nya
         row.innerHTML = `
         <td class="px-8 py-5">
             <p class="text-[11px] font-black text-gray-800 uppercase tracking-tight">${nama}</p>
             <p class="text-[9px] text-gray-400 font-bold uppercase tracking-[0.1em] mt-0.5">${kode}</p>
         </td>
-        <td class="px-8 py-5 text-center text-[11px] font-bold text-gray-400">${stokAwal}</td>
+        <td class="px-8 py-5 text-center text-[11px] font-bold text-gray-400">${stokAwal ?? '-'}</td>
         <td class="px-8 py-5 text-center">
-            <input 
-                type="number" 
-                min="1" 
-                value="${qty}"
-                name="items[${id}]"
+            <input type="number" min="1" value="${qty}" name="items[${id}]"
                 class="qty-input w-20 text-center px-3 py-1.5 bg-teal-50 border border-teal-100 rounded-lg text-xs font-black text-[#1E4D9C] focus:outline-none focus:ring-2 focus:ring-[#5EEAD4]">
         </td>
         <td class="px-8 py-5 text-center">
@@ -416,32 +387,106 @@
             </button>
         </td>`;
 
-        tableBody.appendChild(row);
+        allRows.push(row);
         itemCount++;
         updateCounter();
+        currentPage = Math.ceil(allRows.length / PER_PAGE);
+        renderPage();
+    }
+
+    function renderPage() {
+        const tbody = document.getElementById('stokTableBody');
+        tbody.innerHTML = '';
+        if (allRows.length === 0) {
+            tbody.innerHTML = '<tr id="emptyRow"><td colspan="4" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">Belum ada barang di list</td></tr>';
+            document.getElementById('paginationWrapper').classList.add('hidden');
+            return;
+        }
+        const start = (currentPage - 1) * PER_PAGE;
+        const end = Math.min(start + PER_PAGE, allRows.length);
+        for (let i = start; i < end; i++) tbody.appendChild(allRows[i]);
+        renderPagination(start + 1, end);
+    }
+
+    function renderPagination(from, to) {
+        const wrapper = document.getElementById('paginationWrapper');
+        const info = document.getElementById('paginationInfo');
+        const controls = document.getElementById('paginationControls');
+        const total = allRows.length;
+        const lastPage = Math.ceil(total / PER_PAGE);
+
+        wrapper.classList.remove('hidden');
+        wrapper.classList.add('flex');
+        info.textContent = `${from}–${to} dari ${total}`;
+        controls.innerHTML = '';
+
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.textContent = '← Prev';
+        prev.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => {
+            currentPage--;
+            renderPage();
+        };
+        controls.appendChild(prev);
+
+        buildPageList(currentPage, lastPage).forEach((page, idx, arr) => {
+            if (idx > 0 && page - arr[idx - 1] > 1) {
+                const dots = document.createElement('span');
+                dots.textContent = '…';
+                dots.className = 'text-gray-300 font-black text-xs';
+                controls.appendChild(dots);
+            }
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = page;
+            btn.className = `w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all ${page === currentPage ? 'bg-[#1E4D9C] text-white shadow' : 'text-gray-400 hover:bg-gray-100'}`;
+            btn.onclick = () => {
+                currentPage = page;
+                renderPage();
+            };
+            controls.appendChild(btn);
+        });
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.textContent = 'Next →';
+        next.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === lastPage ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        next.disabled = currentPage === lastPage;
+        next.onclick = () => {
+            currentPage++;
+            renderPage();
+        };
+        controls.appendChild(next);
+    }
+
+    function buildPageList(current, last) {
+        const pages = new Set([1]);
+        for (let i = Math.max(2, current - 1); i <= Math.min(last - 1, current + 1); i++) pages.add(i);
+        if (last > 1) pages.add(last);
+        return [...pages].sort((a, b) => a - b);
     }
 
     function removeRow(btn) {
-        btn.closest('tr').remove();
+        const rowEl = btn.closest('tr');
+        allRows = allRows.filter(r => r !== rowEl);
         itemCount--;
         updateCounter();
-        const tableBody = document.getElementById('stokTableBody');
-        if (tableBody.children.length === 0) {
-            tableBody.innerHTML = '<tr id="emptyRow"><td colspan="4" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">Belum ada barang di list</td></tr>';
-        }
+        const lastPage = Math.ceil(allRows.length / PER_PAGE) || 1;
+        if (currentPage > lastPage) currentPage = lastPage;
+        renderPage();
     }
 
     function updateCounter() {
         document.getElementById('itemCount').innerText = itemCount + ' Items';
     }
 
-    // Tom Select untuk tambah stok
     const tsStok = new TomSelect('#itemSelector', {
         placeholder: 'Cari kode / nama barang...',
         searchField: ['text'],
         maxOptions: 50,
         onChange(value) {
-            // biar fungsi addToTable() bisa baca value-nya
             document.getElementById('itemSelector').value = value;
         }
     });

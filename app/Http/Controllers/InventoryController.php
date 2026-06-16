@@ -19,7 +19,6 @@ class InventoryController extends Controller
             });
         }
 
-        // Stats dihitung SEBELUM filter status (biar kartu stats tetap akurat)
         $allBarangs = $query->get();
         $stats = [
             'not_used' => $allBarangs->where('qty', 0)->where('max', 0)->where('min', 0)->count(),
@@ -29,7 +28,6 @@ class InventoryController extends Controller
             'aman'     => $allBarangs->filter(fn($i) => $i->qty >= $i->min && $i->qty <= $i->max && $i->qty > 0)->count(),
         ];
 
-        // Filter status diterapkan SETELAH stats dihitung
         switch ($request->status) {
             case 'aman':
                 $query->where('qty', '>', 0)
@@ -52,7 +50,7 @@ class InventoryController extends Controller
                 break;
         }
 
-        $barangs = $query->orderBy('kode_barang')->paginate(10)->withQueryString();
+        $barangs = $query->orderBy('kode_barang')->paginate(9)->withQueryString();
 
         return view('admin.inventory.index', compact('barangs', 'stats'));
     }

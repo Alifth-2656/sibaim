@@ -114,7 +114,8 @@ class DashboardController extends Controller
 
         $stokKosong = Barang::where('qty', '<=', 0)
             ->orderBy('nama_barang')
-            ->get();
+            ->paginate(5, ['*'], 'kosong_page')
+            ->withQueryString();
 
         // Stat cards — selalu cached (tidak tergantung filter tanggal)
         $stats = Cache::remember('dashboard_admin_stats', now()->addMinutes(5), function () {
@@ -127,7 +128,7 @@ class DashboardController extends Controller
                 'stockAman'    => Barang::whereColumn('qty', '>=', 'min')->count(),
                 'stockKurang'  => Barang::whereColumn('qty', '<', 'min')->where('qty', '>', 0)->count(),
                 'stockHabis'   => Barang::where('qty', 0)->count(),
-                'lowStocks'    => Barang::whereColumn('qty', '<=', 'min')->orderBy('qty')->limit(5)->get()->toArray(),
+                'lowStocks'    => Barang::whereColumn('qty', '<', 'min')->orderBy('qty')->limit(5)->get()->toArray(),
             ];
         });
 

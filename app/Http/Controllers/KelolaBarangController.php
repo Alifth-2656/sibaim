@@ -337,4 +337,56 @@ class KelolaBarangController extends Controller
             return back()->with('error', 'Gagal menyimpan STO: ' . $e->getMessage());
         }
     }
+    // ================= EDIT BARANG =================
+    public function editBarang()
+    {
+        $barangs = Barang::orderBy('kode_barang')->get();
+        return view('admin.kelola_barang.edit_barang', compact('barangs'));
+    }
+
+    public function updateBarang(Request $request)
+    {
+        $request->validate([
+            'items'               => 'required|array|min:1',
+            'items.*.id'          => 'required|exists:barangs,id',
+            'items.*.nama_barang' => 'required|string|max:255',
+            'items.*.satuan'      => 'required|string|max:50',
+            'items.*.min'         => 'required|integer|min:0',
+            'items.*.max'         => 'required|integer|min:0',
+            'items.*.alamat'      => 'nullable|string|max:100',
+            'images.*'            => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request) {
+                foreach ($request->items as $data) {
+                    $barang = Barang::findOrFail($data['id']);
+
+                    $updateData = [
+                        'nama_barang' => $data['nama_barang'],
+                        'satuan'      => $data['satuan'],
+                        'min'         => $data['min'],
+                        'max'         => $data['max'],
+                        'alamat'      => $data['alamat'] ?? $barang->alamat,
+                    ];
+
+                    // Cek apakah ada upload gambar baru untuk barang ini
+                    if ($request->hasFile("images.{$data['id']}")) {
+                        // Hapus gambar lama kalau ada
+                        if ($barang->image) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($barang->image);
+                        }
+                        $updateData['image'] = $request->file("images.{$data['id']}")->store('products', 'public');
+                    }
+
+                    $barang->update($updateData);
+                }
+            });
+
+            return redirect()->route('admin.kelola_barang.edit')
+                ->with('success', 'Data barang berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui barang: ' . $e->getMessage());
+        }
+    }
 }

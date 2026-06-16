@@ -4,8 +4,9 @@
 
 @section('content')
 
-
 <div class="space-y-8">
+
+    {{-- Header --}}
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
         <div>
             <h3 class="font-black text-gray-800 text-xl uppercase tracking-tight">Inventory Warehouse</h3>
@@ -24,8 +25,7 @@
         </div>
     </div>
 
-
-
+    {{-- Search --}}
     <form action="{{ route('admin.inventory.index') }}" method="GET" class="relative">
         <input type="hidden" name="view" value="{{ request('view', 'table') }}">
         <input type="text" name="search" value="{{ request('search') }}"
@@ -38,8 +38,7 @@
         </button>
     </form>
 
-
-
+    {{-- Stats Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
             <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aman</span>
@@ -63,28 +62,50 @@
         </div>
     </div>
 
+    {{-- Filter Status --}}
     <form action="{{ route('admin.inventory.index') }}" method="GET" class="flex flex-wrap gap-2">
         <input type="hidden" name="view" value="{{ request('view', 'table') }}">
         <input type="hidden" name="search" value="{{ request('search') }}">
 
         @foreach([
-        '' => 'Semua',
-        'aman' => 'Aman',
-        'shortage' => 'Shortage',
-        'kosong' => 'Kosong',
-        'over' => 'Over',
-        'not_used' => 'Not Used',
+            ''         => 'Semua',
+            'aman'     => 'Aman',
+            'shortage' => 'Shortage',
+            'kosong'   => 'Kosong',
+            'over'     => 'Over',
+            'not_used' => 'Not Used',
         ] as $val => $label)
-        <button type="submit" name="status" value="{{ $val }}"
-            class="px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full transition-all
-        {{ request('status', '') === $val
-            ? 'bg-[#1E4D9C] text-white shadow-lg'
-            : 'bg-white text-gray-400 border border-gray-200 hover:border-[#1E4D9C] hover:text-[#1E4D9C]' }}">
-            {{ $label }}
-        </button>
+            <button type="submit" name="status" value="{{ $val }}"
+                class="px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full transition-all
+                    {{ request('status', '') === $val
+                        ? 'bg-[#1E4D9C] text-white shadow-lg'
+                        : 'bg-white text-gray-400 border border-gray-200 hover:border-[#1E4D9C] hover:text-[#1E4D9C]' }}">
+                {{ $label }}
+            </button>
         @endforeach
     </form>
 
+    {{-- Pagination partial (reusable) --}}
+    @php
+        function paginationLinks($barangs) {
+            $current = $barangs->currentPage();
+            $last    = $barangs->lastPage();
+            $pages   = [1];
+
+            for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) {
+                $pages[] = $i;
+            }
+
+            if ($last > 1) $pages[] = $last;
+
+            $pages = array_unique($pages);
+            sort($pages);
+
+            return $pages;
+        }
+    @endphp
+
+    {{-- ===================== TABLE VIEW ===================== --}}
     @if(request('view', 'table') == 'table')
     <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -93,7 +114,7 @@
                     <th class="p-4">No</th>
                     <th class="p-4">Kode</th>
                     <th class="p-4">Nama Barang</th>
-                    <th class="p-4">alamat</th>
+                    <th class="p-4">Alamat</th>
                     <th class="p-4">Satuan</th>
                     <th class="p-4 text-right">Min</th>
                     <th class="p-4 text-right">Max</th>
@@ -102,7 +123,7 @@
                 </tr>
             </thead>
             <tbody class="text-xs font-semibold text-gray-600">
-                @foreach($barangs as $index => $item)
+                @forelse($barangs as $item)
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
                     <td class="p-4">{{ $barangs->firstItem() + $loop->index }}</td>
                     <td class="p-4 font-black text-gray-800">{{ $item->kode_barang }}</td>
@@ -116,11 +137,18 @@
                         @include('layouts.partials.status_badge')
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="9" class="p-8 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">
+                        Tidak ada barang ditemukan.
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
 
-        {{-- Pagination — di luar </table> --}}
+        {{-- Pagination Table --}}
+        @if($barangs->hasPages())
         <div class="mt-6 flex items-center justify-between px-2">
             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 Menampilkan {{ $barangs->firstItem() }}–{{ $barangs->lastItem() }}
@@ -128,99 +156,143 @@
             </p>
 
             <div class="flex items-center gap-1">
-                {{-- Prev --}}
                 @if($barangs->onFirstPage())
-                <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
+                    <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
                 @else
-                <a href="{{ $barangs->previousPageUrl() }}"
-                    class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
+                    <a href="{{ $barangs->previousPageUrl() }}"
+                        class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
                 @endif
 
-                {{-- Nomor halaman dengan ellipsis --}}
                 @php
-                $current = $barangs->currentPage();
-                $last = $barangs->lastPage();
-                $pages = [];
+                    $current = $barangs->currentPage();
+                    $last    = $barangs->lastPage();
+                    $pages   = [1];
+                    for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) { $pages[] = $i; }
+                    if ($last > 1) $pages[] = $last;
+                    $pages = array_unique($pages); sort($pages);
+                    $prev = null;
+                @endphp
 
-                // Selalu tampilkan halaman 1
-                $pages[] = 1;
-
-                // Window 2 kiri & kanan dari current
-                for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) {
-                    $pages[]=$i;
-                    }
-
-                    // Selalu tampilkan halaman terakhir
-                    if ($last> 1) $pages[] = $last;
-
-                    $pages = array_unique($pages);
-                    sort($pages);
-                    @endphp
-
-                    @php $prev = null; @endphp
-                    @foreach($pages as $page)
+                @foreach($pages as $page)
                     @if($prev !== null && $page - $prev > 1)
-                    <span class="px-1 text-gray-300 font-black text-sm">…</span>
+                        <span class="px-1 text-gray-300 font-black text-sm">…</span>
                     @endif
-
                     <a href="{{ $barangs->url($page) }}"
                         class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all
-                                   {{ $page == $current
-                                       ? 'bg-[#1E4D9C] text-white shadow-lg'
-                                       : 'text-gray-400 hover:bg-gray-100' }}">
+                            {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
                         {{ $page }}
                     </a>
-
                     @php $prev = $page; @endphp
-                    @endforeach
+                @endforeach
 
-                    {{-- Next --}}
-                    @if($barangs->hasMorePages())
+                @if($barangs->hasMorePages())
                     <a href="{{ $barangs->nextPageUrl() }}"
                         class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
-                    @else
+                @else
                     <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>
-                    @endif
+                @endif
+            </div>
+        </div>
+        @endif
+
+    </div>
+
+    {{-- ===================== CARD VIEW ===================== --}}
+    @else
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @forelse($barangs as $item)
+        <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-lg transition flex flex-col overflow-hidden">
+
+            <div class="h-40 bg-gray-50 flex items-center justify-center border-b border-gray-100">
+                @if($item->image)
+                    <img src="{{ asset('storage/' . $item->image) }}"
+                        alt="{{ $item->nama_barang }}"
+                        class="h-full w-full object-cover">
+                @else
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">No Image</span>
+                    </div>
+                @endif
+            </div>
+
+            <div class="p-6 flex flex-col justify-between flex-grow">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{{ $item->kode_barang }}</span>
+                        @include('layouts.partials.status_badge')
+                    </div>
+                    <h4 class="font-black text-gray-800 text-sm mb-1">{{ $item->nama_barang }}</h4>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ $item->satuan }}</p>
+                    <p class="text-[10px] text-gray-400 mt-1">📍 {{ $item->alamat }}</p>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-xs font-black text-blue-600">Stok: {{ $item->qty }}</span>
+                    <span class="text-[10px] text-gray-400">Min: {{ $item->min }} / Max: {{ $item->max }}</span>
+                </div>
             </div>
         </div>
 
-    </div> {{-- tutup div.bg-white --}}
-</div>
-@else
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    @foreach($barangs as $item)
-    <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-lg transition flex flex-col overflow-hidden">
+        @empty
+        <div class="col-span-3 text-center py-16 text-gray-400">
+            <p class="text-4xl mb-2">📦</p>
+            <p class="text-xs font-bold uppercase tracking-widest">Tidak ada barang ditemukan.</p>
+        </div>
+        @endforelse
+    </div>
 
-        <div class="h-40 bg-gray-50 flex items-center justify-center border-b border-gray-100">
-            @if($item->image)
-            <img src="{{ asset('storage/' . $item->image) }}"
-                alt="{{ $item->nama_barang }}"
-                class="h-full w-full object-cover">
+    {{-- Pagination Card --}}
+    @if($barangs->hasPages())
+    <div class="mt-6 flex items-center justify-between">
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            Menampilkan {{ $barangs->firstItem() }}–{{ $barangs->lastItem() }}
+            dari {{ $barangs->total() }} barang
+        </p>
+
+        <div class="flex items-center gap-1">
+            @if($barangs->onFirstPage())
+                <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">← Prev</span>
             @else
-            <div class="flex flex-col items-center justify-center gap-2">
-                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">No Image</span>
-            </div>
+                <a href="{{ $barangs->previousPageUrl() }}"
+                    class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">← Prev</a>
+            @endif
+
+            @php
+                $current = $barangs->currentPage();
+                $last    = $barangs->lastPage();
+                $pages   = [1];
+                for ($i = max(2, $current - 2); $i <= min($last - 1, $current + 2); $i++) { $pages[] = $i; }
+                if ($last > 1) $pages[] = $last;
+                $pages = array_unique($pages); sort($pages);
+                $prev = null;
+            @endphp
+
+            @foreach($pages as $page)
+                @if($prev !== null && $page - $prev > 1)
+                    <span class="px-1 text-gray-300 font-black text-sm">…</span>
+                @endif
+                <a href="{{ $barangs->url($page) }}"
+                    class="w-8 h-8 flex items-center justify-center rounded-xl text-[10px] font-black transition-all
+                        {{ $page == $current ? 'bg-[#1E4D9C] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-100' }}">
+                    {{ $page }}
+                </a>
+                @php $prev = $page; @endphp
+            @endforeach
+
+            @if($barangs->hasMorePages())
+                <a href="{{ $barangs->nextPageUrl() }}"
+                    class="px-4 py-2 text-[10px] font-black text-[#1E4D9C] uppercase tracking-widest hover:text-[#5EEAD4] transition-all">Next →</a>
+            @else
+                <span class="px-4 py-2 text-[10px] font-black text-gray-300 uppercase tracking-widest cursor-not-allowed">Next →</span>
             @endif
         </div>
-
-        <div class="p-6 flex flex-col justify-between flex-grow">
-            <div>
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{{ $item->kode_barang }}</span>
-                    @include('layouts.partials.status_badge')
-                </div>
-                <h4 class="font-black text-gray-800 text-sm mb-1">{{ $item->nama_barang }}</h4>
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ $item->satuan }}</p>
-            </div>
-
-
-        </div>
     </div>
-    @endforeach
-</div>
-@endif
+    @endif
+
+    @endif
+
 </div>
 @endsection

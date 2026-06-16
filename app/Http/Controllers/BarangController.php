@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/BarangController.php
-
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
@@ -15,14 +13,13 @@ class BarangController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
                     ->orWhere('kode_barang', 'like', "%{$search}%");
             });
         }
 
-        $barangs = $query->get();
+        $barangs = $query->orderBy('kode_barang')->paginate(9)->withQueryString();
 
         return view('comodity.data_barang.index', compact('barangs'));
     }

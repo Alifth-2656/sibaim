@@ -83,6 +83,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::post('/sto/check', [KelolaBarangController::class, 'checkSto'])->name('sto.check');
         Route::post('/sto/confirm', [KelolaBarangController::class, 'confirmSto'])->name('sto.confirm');
         Route::post('/sto/discard-draft', [KelolaBarangController::class, 'discardStoDraft'])->name('sto.discard_draft');
+        Route::get('/edit', [KelolaBarangController::class, 'editBarang'])->name('edit');
+        Route::put('/edit', [KelolaBarangController::class, 'updateBarang'])->name('edit.update');
     });
 
     // History

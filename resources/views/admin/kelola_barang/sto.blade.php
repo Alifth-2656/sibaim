@@ -262,6 +262,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- PAGINATION --}}
+                    <div id="paginationWrapper" class="px-4 py-3 border-t border-gray-100 items-center justify-between hidden">
+                        <p id="paginationInfo" class="text-[10px] font-black text-gray-400 uppercase tracking-widest"></p>
+                        <div id="paginationControls" class="flex items-center gap-1"></div>
+                    </div>
                 </div>
 
                 {{-- FOOTER --}}
@@ -290,6 +296,11 @@
 <script>
     let stoItems = {};
     const TOTAL_BARANG = {{ $barangs->count() }};
+
+    // ─── PAGINATION STATE ─────────────────────────────────────
+    let allRowIds = []; // menyimpan urutan insert id
+    const PER_PAGE = 10;
+    let currentPage = 1;
 
     // ─── INIT TOM SELECT ─────────────────────────────────────
     const tsSto = new TomSelect('#itemSelector', {
@@ -330,9 +341,9 @@
     // ─── MODE TOGGLE ─────────────────────────────────────────
     function setMode(mode) {
         const manual = document.getElementById('manualSection');
-        const scan = document.getElementById('scanSection');
-        const btnM = document.getElementById('btnManual');
-        const btnS = document.getElementById('btnScan');
+        const scan   = document.getElementById('scanSection');
+        const btnM   = document.getElementById('btnManual');
+        const btnS   = document.getElementById('btnScan');
 
         if (mode === 'manual') {
             manual.classList.remove('hidden');
@@ -354,8 +365,8 @@
 
     // ─── SCANNER PHYSICAL ────────────────────────────────────
     const scannerInput = document.getElementById('scannerInput');
-    let lastKeyTime = 0;
-    let isConnected = false;
+    let lastKeyTime    = 0;
+    let isConnected    = false;
     let disconnectTimer = null;
 
     scannerInput.addEventListener('keydown', function(e) {
@@ -388,39 +399,39 @@
     function setConnected(status) {
         isConnected = status;
         const badge = document.getElementById('scannerStatusBadge');
-        const dot = document.getElementById('scannerStatusDot');
-        const text = document.getElementById('scannerStatusText');
-        const icon = document.getElementById('scannerIcon');
+        const dot   = document.getElementById('scannerStatusDot');
+        const text  = document.getElementById('scannerStatusText');
+        const icon  = document.getElementById('scannerIcon');
 
         if (status) {
             badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200 transition-all duration-500';
-            dot.className = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
-            text.className = 'text-[10px] font-black uppercase tracking-widest text-green-600';
-            text.innerText = 'Connected';
-            icon.className = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
+            dot.className   = 'w-2.5 h-2.5 rounded-full bg-green-400 animate-ping';
+            text.className  = 'text-[10px] font-black uppercase tracking-widest text-green-600';
+            text.innerText  = 'Connected';
+            icon.className  = 'w-6 h-6 text-[#5EEAD4] transition-all duration-300';
             clearTimeout(disconnectTimer);
             disconnectTimer = setTimeout(() => setConnected(false), 3000);
         } else {
             badge.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 transition-all duration-500';
-            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
-            text.className = 'text-[10px] font-black uppercase tracking-widest text-red-500';
-            text.innerText = 'Disconnected';
-            icon.className = 'w-6 h-6 text-gray-300 transition-all duration-300';
+            dot.className   = 'w-2.5 h-2.5 rounded-full bg-red-400';
+            text.className  = 'text-[10px] font-black uppercase tracking-widest text-red-500';
+            text.innerText  = 'Disconnected';
+            icon.className  = 'w-6 h-6 text-gray-300 transition-all duration-300';
         }
     }
 
     function speak(text) {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'id-ID';
-        utter.rate = 1.1;
+        utter.lang   = 'id-ID';
+        utter.rate   = 1.1;
         utter.volume = 1;
         window.speechSynthesis.speak(utter);
     }
 
     function processScanCode(raw) {
         const parts = raw.split('|');
-        const kode = parts[0].trim();
-        const qty = parts[1] ? parseInt(parts[1].trim()) : 1;
+        const kode  = parts[0].trim();
+        const qty   = parts[1] ? parseInt(parts[1].trim()) : 1;
 
         const selector = document.getElementById('itemSelector');
         let found = null;
@@ -498,7 +509,7 @@
 
     // ─── MANUAL ADD ──────────────────────────────────────────
     function addItem() {
-        const qtyInput = document.getElementById('inputQtyFisik');
+        const qtyInput  = document.getElementById('inputQtyFisik');
         const selectedId = tsSto.getValue();
 
         if (!selectedId) {
@@ -513,7 +524,7 @@
         }
 
         const selector = document.getElementById('itemSelector');
-        const opt = selector.querySelector(`option[value="${selectedId}"]`);
+        const opt      = selector.querySelector(`option[value="${selectedId}"]`);
 
         addToTable(
             String(opt.value),
@@ -530,28 +541,55 @@
 
     // ─── CORE TABLE ──────────────────────────────────────────
     function addToTable(id, nama, kode, satuan, qtySistem, qtyFisik) {
-        const emptyRow = document.getElementById('emptyRow');
-        if (emptyRow) emptyRow.remove();
-
         if (stoItems[id]) {
+            // Update qty fisik lalu re-render halaman aktif
             stoItems[id].qtyFisik = qtyFisik;
-            updateRow(id);
+            renderPage();
         } else {
             stoItems[id] = { nama, kode, satuan, qtySistem, qtyFisik };
-            renderRow(id);
+            allRowIds.push(id);
             updateCounter();
+            // Loncat ke halaman terakhir agar row baru keliatan
+            currentPage = Math.ceil(allRowIds.length / PER_PAGE);
+            renderPage();
         }
     }
 
+    // ─── PAGINATION RENDER ───────────────────────────────────
+    function renderPage() {
+        const tbody = document.getElementById('stoTableBody');
+        tbody.innerHTML = '';
+
+        if (allRowIds.length === 0) {
+            tbody.innerHTML = `
+                <tr id="emptyRow">
+                    <td colspan="5" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">
+                        Belum ada barang — tambah manual atau scan QR
+                    </td>
+                </tr>`;
+            document.getElementById('paginationWrapper').classList.add('hidden');
+            return;
+        }
+
+        const start = (currentPage - 1) * PER_PAGE;
+        const end   = Math.min(start + PER_PAGE, allRowIds.length);
+
+        for (let i = start; i < end; i++) {
+            renderRow(allRowIds[i]);
+        }
+
+        renderPagination(start + 1, end);
+    }
+
     function renderRow(id) {
-        const item = stoItems[id];
-        const selisih = item.qtyFisik - item.qtySistem;
+        const item       = stoItems[id];
+        const selisih    = item.qtyFisik - item.qtySistem;
         const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
         const selisihStr = selisih > 0 ? '+' + selisih : String(selisih);
 
         const tbody = document.getElementById('stoTableBody');
-        const tr = document.createElement('tr');
-        tr.id = 'row-' + id;
+        const tr    = document.createElement('tr');
+        tr.id        = 'row-' + id;
         tr.className = 'border-b border-gray-50 hover:bg-purple-50/20 transition-all';
 
         tr.innerHTML = `
@@ -571,51 +609,105 @@
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
-            </td>
-        `;
+            </td>`;
 
         tbody.appendChild(tr);
 
-        const inputFisik = document.createElement('input');
-        inputFisik.type = 'number';
-        inputFisik.min = '0';
-        inputFisik.value = item.qtyFisik;
+        // Input qty fisik (editable)
+        const inputFisik     = document.createElement('input');
+        inputFisik.type      = 'number';
+        inputFisik.min       = '0';
+        inputFisik.value     = item.qtyFisik;
         inputFisik.className = 'w-20 text-center px-3 py-2 bg-gray-50 rounded-xl font-black text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#5EEAD4] border border-gray-100';
         inputFisik.addEventListener('change', function() {
             updateQtyFisik(id, this.value);
         });
 
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'items[' + id + ']';
-        hiddenInput.value = item.qtyFisik;
-        hiddenInput.id = 'hidden-' + id;
+        // Hidden input untuk submit form
+        const hiddenInput  = document.createElement('input');
+        hiddenInput.type   = 'hidden';
+        hiddenInput.name   = 'items[' + id + ']';
+        hiddenInput.value  = item.qtyFisik;
+        hiddenInput.id     = 'hidden-' + id;
 
-        const tdFisik = document.getElementById('tdFisik-' + id);
-        tdFisik.appendChild(inputFisik);
-        tdFisik.appendChild(hiddenInput);
+        document.getElementById('tdFisik-' + id).append(inputFisik, hiddenInput);
 
         tr.querySelector('[data-remove]').addEventListener('click', function() {
             removeRow(this.getAttribute('data-remove'));
         });
     }
 
+    function renderPagination(from, to) {
+        const wrapper  = document.getElementById('paginationWrapper');
+        const info     = document.getElementById('paginationInfo');
+        const controls = document.getElementById('paginationControls');
+        const total    = allRowIds.length;
+        const lastPage = Math.ceil(total / PER_PAGE);
+
+        wrapper.classList.remove('hidden');
+        wrapper.classList.add('flex');
+        info.textContent = `${from}–${to} dari ${total}`;
+        controls.innerHTML = '';
+
+        // Prev
+        const prev     = document.createElement('button');
+        prev.type      = 'button';
+        prev.textContent = '← Prev';
+        prev.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        prev.disabled  = currentPage === 1;
+        prev.onclick   = () => { currentPage--; renderPage(); };
+        controls.appendChild(prev);
+
+        // Page numbers
+        buildPageList(currentPage, lastPage).forEach((page, idx, arr) => {
+            if (idx > 0 && page - arr[idx - 1] > 1) {
+                const dots = document.createElement('span');
+                dots.textContent = '…';
+                dots.className   = 'text-gray-300 font-black text-xs';
+                controls.appendChild(dots);
+            }
+            const btn     = document.createElement('button');
+            btn.type      = 'button';
+            btn.textContent = page;
+            btn.className = `w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all ${page === currentPage ? 'bg-[#1E4D9C] text-white shadow' : 'text-gray-400 hover:bg-gray-100'}`;
+            btn.onclick   = () => { currentPage = page; renderPage(); };
+            controls.appendChild(btn);
+        });
+
+        // Next
+        const next     = document.createElement('button');
+        next.type      = 'button';
+        next.textContent = 'Next →';
+        next.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === lastPage ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        next.disabled  = currentPage === lastPage;
+        next.onclick   = () => { currentPage++; renderPage(); };
+        controls.appendChild(next);
+    }
+
+    function buildPageList(current, last) {
+        const pages = new Set([1]);
+        for (let i = Math.max(2, current - 1); i <= Math.min(last - 1, current + 1); i++) pages.add(i);
+        if (last > 1) pages.add(last);
+        return [...pages].sort((a, b) => a - b);
+    }
+
+    // ─── UPDATE ROW (qty fisik berubah) ──────────────────────
     function updateRow(id) {
-        const item = stoItems[id];
-        const selisih = item.qtyFisik - item.qtySistem;
+        const item       = stoItems[id];
+        const selisih    = item.qtyFisik - item.qtySistem;
         const colorClass = selisih === 0 ? 'text-green-500' : (selisih > 0 ? 'text-blue-500' : 'text-red-500');
 
         const selisihEl = document.getElementById('selisih-' + id);
-        const hiddenEl = document.getElementById('hidden-' + id);
-        const tdFisik = document.getElementById('tdFisik-' + id);
-        const inputEl = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
+        const hiddenEl  = document.getElementById('hidden-' + id);
+        const tdFisik   = document.getElementById('tdFisik-' + id);
+        const inputEl   = tdFisik ? tdFisik.querySelector('input[type="number"]') : null;
 
         if (selisihEl) {
             selisihEl.innerText = selisih > 0 ? '+' + selisih : String(selisih);
             selisihEl.className = 'text-sm font-black ' + colorClass;
         }
         if (hiddenEl) hiddenEl.value = item.qtyFisik;
-        if (inputEl) inputEl.value = item.qtyFisik;
+        if (inputEl)  inputEl.value  = item.qtyFisik;
     }
 
     function updateQtyFisik(id, val) {
@@ -625,46 +717,43 @@
         updateRow(id);
     }
 
+    // ─── REMOVE ROW ──────────────────────────────────────────
     function removeRow(id) {
         delete stoItems[id];
-        const row = document.getElementById('row-' + id);
-        if (row) row.remove();
+        allRowIds = allRowIds.filter(r => r !== id);
         updateCounter();
 
-        if (Object.keys(stoItems).length === 0) {
-            document.getElementById('stoTableBody').innerHTML = `
-                <tr id="emptyRow">
-                    <td colspan="5" class="px-8 py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.2em]">
-                        Belum ada barang — tambah manual atau scan QR
-                    </td>
-                </tr>`;
-        }
+        const lastPage = Math.ceil(allRowIds.length / PER_PAGE) || 1;
+        if (currentPage > lastPage) currentPage = lastPage;
+        renderPage();
     }
 
+    // ─── COUNTER + PROGRESS ──────────────────────────────────
     function updateCounter() {
-        const scanned = Object.keys(stoItems).length;
+        const scanned   = allRowIds.length;
         const remaining = TOTAL_BARANG - scanned;
-        const pct = TOTAL_BARANG > 0 ? Math.round((scanned / TOTAL_BARANG) * 100) : 0;
+        const pct       = TOTAL_BARANG > 0 ? Math.round((scanned / TOTAL_BARANG) * 100) : 0;
 
-        document.getElementById('itemCount').innerText = scanned + ' Items';
+        document.getElementById('itemCount').innerText      = scanned + ' Items';
         document.getElementById('progressScanned').innerText = scanned;
-        document.getElementById('progressBar').style.width = pct + '%';
-        document.getElementById('progressPct').innerText = pct + '%';
+        document.getElementById('progressBar').style.width  = pct + '%';
+        document.getElementById('progressPct').innerText    = pct + '%';
 
         const remainingEl = document.getElementById('progressRemaining');
-        const barEl = document.getElementById('progressBar');
+        const barEl       = document.getElementById('progressBar');
 
         if (pct === 100) {
-            barEl.className = 'h-2 rounded-full bg-green-400 transition-all duration-500';
+            barEl.className      = 'h-2 rounded-full bg-green-400 transition-all duration-500';
             remainingEl.innerText = '✓ Semua tercek';
             remainingEl.className = 'text-[9px] font-black text-green-500 uppercase tracking-widest';
         } else {
-            barEl.className = 'h-2 rounded-full bg-[#5EEAD4] transition-all duration-500';
+            barEl.className      = 'h-2 rounded-full bg-[#5EEAD4] transition-all duration-500';
             remainingEl.innerText = remaining + ' belum dicek';
             remainingEl.className = 'text-[9px] font-black text-gray-300 uppercase tracking-widest';
         }
     }
 
+    // ─── HELPER ──────────────────────────────────────────────
     function escHtml(str) {
         const d = document.createElement('div');
         d.appendChild(document.createTextNode(str));
@@ -673,7 +762,7 @@
 
     // ─── GUARD SUBMIT ────────────────────────────────────────
     document.getElementById('stoForm').addEventListener('submit', function(e) {
-        if (Object.keys(stoItems).length === 0) {
+        if (allRowIds.length === 0) {
             e.preventDefault();
             alert('Tambahkan minimal 1 barang sebelum cek selisih.');
         }

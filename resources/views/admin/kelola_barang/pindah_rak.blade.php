@@ -175,6 +175,11 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- PAGINATION -->
+                        <div id="paginationWrapper" class="px-4 py-3 border-t border-gray-100 items-center justify-between hidden">
+                            <p id="paginationInfo" class="text-[10px] font-black text-gray-400 uppercase tracking-widest"></p>
+                            <div id="paginationControls" class="flex items-center gap-1"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -202,7 +207,6 @@
 </div>
 
 <script>
-    // ── DATA BARANG ──
     const barangData = {};
     @foreach($barangs as $item)
     barangData["{{ $item->kode_barang }}"] = {
@@ -213,21 +217,21 @@
     };
     @endforeach
 
-    // ── STATE ──
     let itemCount = 0;
     const addedIds = new Set();
     let currentScannedItem = null;
     let scanTimeout = null;
 
-    // ── TAB SWITCH ──
+    let allRows = [];
+    const PER_PAGE = 10;
+    let currentPage = 1;
+
     function switchTab(tab) {
         const isScan = tab === 'scan';
         document.getElementById('panel-scan').classList.toggle('hidden', !isScan);
         document.getElementById('panel-manual').classList.toggle('hidden', isScan);
-
-        const tabScan = document.getElementById('tab-scan');
-        const tabManual = document.getElementById('tab-manual');
-
+        const tabScan = document.getElementById('tab-scan'),
+            tabManual = document.getElementById('tab-manual');
         if (isScan) {
             tabScan.classList.add('bg-white', 'shadow', 'text-[#1E4D9C]');
             tabScan.classList.remove('text-gray-400');
@@ -242,22 +246,16 @@
         }
     }
 
-    // ── SCANNER INPUT LISTENER ──
     const scanInput = document.getElementById('scanInput');
-
     scanInput.addEventListener('focus', () => setStatus('connected'));
     scanInput.addEventListener('blur', () => setStatus('disconnected'));
-
     scanInput.addEventListener('input', function() {
         clearTimeout(scanTimeout);
-        // Barcode scanner biasanya kirim karakter cepat lalu Enter
-        // Kita trigger setelah 300ms idle atau saat Enter
         scanTimeout = setTimeout(() => {
             const val = this.value.trim().toUpperCase();
             if (val.length >= 3) processScan(val);
         }, 300);
     });
-
     scanInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -285,8 +283,6 @@
             return;
         }
         currentScannedItem = item;
-
-        // Tampilkan info barang
         document.getElementById('scannedNama').textContent = item.nama;
         document.getElementById('scannedKode').textContent = item.kode + ' · Rak saat ini: ' + item.alamat;
         document.getElementById('scannedItemInfo').classList.remove('hidden');
@@ -300,12 +296,10 @@
         alert(msg);
     }
 
-    // ── TAMBAH DARI SCAN ──
     function addFromScan() {
         if (!currentScannedItem) return alert('Scan barang terlebih dahulu!');
         const rakBaru = document.getElementById('scanRak').value.trim().toUpperCase();
         if (!rakBaru) return alert('Isi rak tujuan!');
-
         if (addRow(currentScannedItem.id, currentScannedItem.nama, currentScannedItem.kode, currentScannedItem.alamat, rakBaru)) {
             scanInput.value = '';
             document.getElementById('scanRak').value = '';
@@ -316,41 +310,30 @@
         }
     }
 
-    document.getElementById('scanRak').addEventListener('keydown', function(e) {
+    document.getElementById('scanRak').addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             e.preventDefault();
             addFromScan();
         }
     });
 
-    // ── TAMBAH DARI MANUAL ──
     function addFromManual() {
-        const selector = document.getElementById('itemSelector');
-        const rakBaru = document.getElementById('manualRak').value.trim().toUpperCase();
+        const selector = document.getElementById('itemSelector'),
+            rakBaru = document.getElementById('manualRak').value.trim().toUpperCase();
         const itemId = selector.value;
         if (!itemId || !rakBaru) return alert('Pilih barang & isi rak tujuan!');
-
         const opt = selector.options[selector.selectedIndex];
-        const nama = opt.getAttribute('data-nama');
-        const kode = opt.getAttribute('data-kode');
-        const alamatLama = opt.getAttribute('data-alamat') || 'N/A';
-
-        if (addRow(itemId, nama, kode, alamatLama, rakBaru)) {
+        if (addRow(itemId, opt.getAttribute('data-nama'), opt.getAttribute('data-kode'), opt.getAttribute('data-alamat') || 'N/A', rakBaru)) {
             selector.value = '';
             document.getElementById('manualRak').value = '';
         }
     }
 
-    // ── ADD ROW ──
     function addRow(itemId, nama, kode, alamatLama, rakBaru) {
         if (addedIds.has(itemId)) {
             alert('Barang ' + kode + ' sudah ada di daftar!');
             return false;
         }
-
-        const tableBody = document.getElementById('moveTableBody');
-        const emptyRow = document.getElementById('emptyRow');
-        if (emptyRow) emptyRow.remove();
 
         const row = document.createElement('tr');
         row.className = 'border-b border-gray-50 hover:bg-teal-50/20 transition-all';
@@ -374,41 +357,105 @@
             <td class="px-8 py-5 text-center">
                 <button type="button" onclick="removeRow(this, '${itemId}')" class="p-2 text-red-200 hover:text-red-500 transition-all">
                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
-            </td>
-        `;
+            </td>`;
 
-        tableBody.appendChild(row);
+        allRows.push(row);
         addedIds.add(itemId);
         itemCount++;
         document.getElementById('itemCounter').innerText = `${itemCount} Items`;
+        currentPage = Math.ceil(allRows.length / PER_PAGE);
+        renderPage();
         return true;
     }
 
+    function renderPage() {
+        const tbody = document.getElementById('moveTableBody');
+        tbody.innerHTML = '';
+        if (allRows.length === 0) {
+            tbody.innerHTML = '<tr id="emptyRow"><td colspan="3" class="px-8 py-20 text-center opacity-20"><p class="text-xs font-bold uppercase tracking-widest italic text-gray-500">Daftar masih kosong</p></td></tr>';
+            document.getElementById('paginationWrapper').classList.add('hidden');
+            return;
+        }
+        const start = (currentPage - 1) * PER_PAGE,
+            end = Math.min(start + PER_PAGE, allRows.length);
+        for (let i = start; i < end; i++) tbody.appendChild(allRows[i]);
+        renderPagination(start + 1, end);
+    }
+
+    function renderPagination(from, to) {
+        const wrapper = document.getElementById('paginationWrapper'),
+            info = document.getElementById('paginationInfo'),
+            controls = document.getElementById('paginationControls'),
+            total = allRows.length,
+            lastPage = Math.ceil(total / PER_PAGE);
+        wrapper.classList.remove('hidden');
+        wrapper.classList.add('flex');
+        info.textContent = `${from}–${to} dari ${total}`;
+        controls.innerHTML = '';
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.textContent = '← Prev';
+        prev.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => {
+            currentPage--;
+            renderPage();
+        };
+        controls.appendChild(prev);
+        buildPageList(currentPage, lastPage).forEach((page, idx, arr) => {
+            if (idx > 0 && page - arr[idx - 1] > 1) {
+                const d = document.createElement('span');
+                d.textContent = '…';
+                d.className = 'text-gray-300 font-black text-xs';
+                controls.appendChild(d);
+            }
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = page;
+            btn.className = `w-7 h-7 flex items-center justify-center rounded-lg text-[10px] font-black transition-all ${page === currentPage ? 'bg-[#1E4D9C] text-white shadow' : 'text-gray-400 hover:bg-gray-100'}`;
+            btn.onclick = () => {
+                currentPage = page;
+                renderPage();
+            };
+            controls.appendChild(btn);
+        });
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.textContent = 'Next →';
+        next.className = `px-3 py-1 text-[10px] font-black uppercase transition-all ${currentPage === lastPage ? 'text-gray-300 cursor-not-allowed' : 'text-[#1E4D9C] hover:text-blue-400'}`;
+        next.disabled = currentPage === lastPage;
+        next.onclick = () => {
+            currentPage++;
+            renderPage();
+        };
+        controls.appendChild(next);
+    }
+
+    function buildPageList(current, last) {
+        const pages = new Set([1]);
+        for (let i = Math.max(2, current - 1); i <= Math.min(last - 1, current + 1); i++) pages.add(i);
+        if (last > 1) pages.add(last);
+        return [...pages].sort((a, b) => a - b);
+    }
+
     function removeRow(btn, itemId) {
-        btn.closest('tr').remove();
+        const rowEl = btn.closest('tr');
+        allRows = allRows.filter(r => r !== rowEl);
         addedIds.delete(itemId);
         itemCount--;
         document.getElementById('itemCounter').innerText = `${itemCount} Items`;
-        if (itemCount === 0) {
-            document.getElementById('moveTableBody').innerHTML = `
-                <tr id="emptyRow">
-                    <td colspan="3" class="px-8 py-20 text-center opacity-20">
-                        <p class="text-xs font-bold uppercase tracking-widest italic text-gray-500">Daftar masih kosong</p>
-                    </td>
-                </tr>`;
-        }
+        const lastPage = Math.ceil(allRows.length / PER_PAGE) || 1;
+        if (currentPage > lastPage) currentPage = lastPage;
+        renderPage();
     }
 
-    // Auto fokus scan input on load
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('scanInput').focus();
     });
 
-    // Tom Select untuk manual input pindah rak
     const tsMove = new TomSelect('#itemSelector', {
         placeholder: 'Cari kode / nama barang...',
         searchField: ['text'],
